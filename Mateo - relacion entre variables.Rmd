@@ -9,6 +9,7 @@ output: html_document
 ```{r}
 library(dplyr)
 library(ggplot2)
+library(knitr)
 ```
 
 ## 1.1. Obtención de los datos:
@@ -24,22 +25,32 @@ if(!dir.exists("./datos")){
 
 Se descargan los datos de composición del hogar
 ```{r}
+#Función para descargar bases de datos
+descargar_bd <- function(url_origen, destino_zip, nombre_archivo){
+    
+    #Se descarga el archivo .zip que contiene los conjuntos de datos 
+    download.file(url = url_origen, destfile = destino_zip, method = "curl")
+    
+    #Se extrae el .csv que contiene los datos
+    unzip(zipfile =  ruta_destino, 
+          files = nombre_archivo,
+          exdir = "./datos")
+    
+    #se elimina el  .zip
+    unlink(destino_zip)
+}
 #Se almacena el url del archivo
 url <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13707"
 
 #Se crea la ruta de destino del archivo
 ruta_destino <- "./datos/compo_hogar.zip"
 
-#Se descarga el archivo .zip que contiene los conjuntos de datos 
-download.file(url = url, destfile = ruta_destino, method = "curl")
+#Se crea el nombre del archivo a extraer
+nombre_archivo<-"Caracteristicas y composicion del hogar.csv"
 
-#Se extrae el .csv que contiene los datos
-unzip(zipfile =  ruta_destino, 
-      files = "Caracteristicas y composicion del hogar.csv",
-      exdir = "./datos")
+#Se descarga la base de datos usando la función creada previamente
+descargar_bd(url, ruta_destino, nombre_archivo)
 
-#se elimina el  .zip
-unlink(ruta_destino)
 ```
 
 ```{r}
@@ -83,7 +94,7 @@ hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
 ```
 
 
-## 2. Estudio de las variables asignadas
+# 2. Estudio de las variables asignadas
 
 ## 2.1. variable P6080
 Los ecuestados responden a la siguente pregunta: **De acuerdo con su cultura, pueblo o rasgos físicos, _____ es o se reconoce comó**
@@ -96,7 +107,6 @@ Los ecuestados responden a la siguente pregunta: **De acuerdo con su cultura, pu
 6. Ninguno de los anteriores
 
 ```{r}
-##Selección de las variables Directorio, hijos y p6080
 tapply(hijos_jefe$Hijos, hijos_jefe$P6080, summary)
 ```
 
@@ -106,13 +116,118 @@ ggplot(hijos_jefe, aes(x = as.factor(P6080), y = Hijos)) +
     xlab("p6080")
 ```
 
+## 2.2. variable P6087
+Los ecuestados responden a la siguente pregunta: **¿cuál es o fue el nivel de educación más alto alcanzado por el padre de…?**
+
+1. Algunos años de primaria
+2. Toda la primaria
+3. Algunos años de secundaria
+4. Toda la secundaria
+5. Uno o mas años de técnica o tecnológica
+6. Técnica o tecnológica completa
+7. Uno o mas años de universidad
+8. Universitaria completa
+9. Ninguno
+10. No sabe
+
 ```{r}
-##Selección de las variables Directorio, hijos y p6080
 tapply(hijos_jefe$Hijos, hijos_jefe$P6087, summary)
 ```
+
 ```{r}
 ggplot(hijos_jefe, aes(x = as.factor(P6087), y = Hijos)) +
     geom_boxplot() +
     xlab("p6087")
+```
+
+## 2.3. variable P6020
+Los ecuestados responden a la siguente pregunta: **Sexo**
+
+1. Hombre
+2. Mujer
+
+```{r}
+tapply(hijos_jefe$Hijos, hijos_jefe$P6020, summary)
+```
+```{r}
+table(hijos_jefe[ ,c("Hijos", "P6020")])
+```
+
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P6020), y = Hijos)) +
+    geom_boxplot() +
+    xlab("p6020")
+```
+
+## 2.4. variable P415
+
+```{r}
+#Se almacena el url del archivo
+url <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13711"
+
+#Se crea la ruta de destino del archivo
+ruta_destino <- "./datos/fuerza_de_trabajo.zip"
+
+#Se crea el nombre del archivo a extraer
+nombre_archivo<-"Fuerza de trabajo.csv"
+
+#Se descarga la base de datos usando la función creada previamente
+descargar_bd(url, ruta_destino, nombre_archivo)
+```
+```{r}
+fuerza_trabajo <- read.csv2(
+  file = "./datos/Fuerza de trabajo.csv",
+  sep = ";",
+  dec = ",",
+  )
+
+#Se cambia el nombre de la primera columna
+colnames(fuerza_trabajo)[1] <- "Directorio"
+
+fuerza_trabajo <- fuerza_trabajo %>% filter(ORDEN == 1) %>% select(Directorio,P415)
+
+hijos_jefe <- merge(hijos_jefe, fuerza_trabajo, by = "Directorio", all = TRUE)
+
+ggplot(subset(hijos_jefe, !is.na(P415)), aes(x = P415, y = Hijos))+
+    geom_point()
+```
+
+```{r}
+hijos_jefe %>% select(Hijos, P415) %>% filter(!is.na(P415)) %>% cor()
+```
+
+## 2.5. variable P8520S3
+```{r}
+#Se almacena el url del archivo
+url <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13705"
+
+#Se crea la ruta de destino del archivo
+ruta_destino <- "./datos/datos_vivienda.zip"
+
+#Se crea el nombre del archivo a extraer
+nombre_archivo<-"Datos de la vivienda.csv"
+
+#Se descarga la base de datos usando la función creada previamente
+descargar_bd(url, ruta_destino, nombre_archivo)
+```
+
+```{r}
+datos_vivienda <- read.csv2(
+  file = "./datos/datos de la vivienda.csv",
+  sep = ";",
+  dec = ",",
+  )
+
+#Se cambia el nombre de la primera columna
+colnames(datos_vivienda)[1] <- "Directorio"
+
+datos_vivienda <- datos_vivienda %>% select(Directorio, P8520S3) 
+
+hijos_jefe <- merge(hijos_jefe, datos_vivienda, by = "Directorio", all = TRUE)
+
+ggplot(hijos_jefe, aes(x = as.factor(P8520S3), y = Hijos))+
+    geom_boxplot()+
+    xlab("P8520S3")
 ```
 
