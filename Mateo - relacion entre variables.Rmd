@@ -6,6 +6,8 @@ output: html_document
 ---
 
 # 1. Pasos preliminares
+
+Se cargan las librerías necesarias
 ```{r}
 library(dplyr)
 library(ggplot2)
@@ -23,7 +25,7 @@ if(!dir.exists("./datos")){
 }
 ```
 
-Se descargan los datos de composición del hogar
+Se crea la función para descargar los conjuntos de dato
 ```{r}
 #Función para descargar bases de datos
 descargar_bd <- function(url_origen, destino_zip, nombre_archivo){
@@ -34,11 +36,16 @@ descargar_bd <- function(url_origen, destino_zip, nombre_archivo){
     #Se extrae el .csv que contiene los datos
     unzip(zipfile =  ruta_destino, 
           files = nombre_archivo,
-          exdir = "./datos")
+          exdir = "./datos"
+          )
     
     #se elimina el  .zip
     unlink(destino_zip)
 }
+```
+
+Descarga del conjunto de datos de la composición del hogar
+```{r}
 #Se almacena el url del archivo
 url <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13707"
 
@@ -50,9 +57,9 @@ nombre_archivo<-"Caracteristicas y composicion del hogar.csv"
 
 #Se descarga la base de datos usando la función creada previamente
 descargar_bd(url, ruta_destino, nombre_archivo)
-
 ```
 
+Lectura de la composición del hogar
 ```{r}
 #Lectura de la composición del hogar
 compo_hogar <- read.csv2(
@@ -65,7 +72,7 @@ compo_hogar <- read.csv2(
 colnames(compo_hogar)[1]<- "Directorio"
 
 #Nombre de las columnas
-colnames(compo_hogar)
+#colnames(compo_hogar)
 
 ```
 
@@ -107,14 +114,29 @@ Los ecuestados responden a la siguente pregunta: **De acuerdo con su cultura, pu
 6. Ninguno de los anteriores
 
 ```{r}
-tapply(hijos_jefe$Hijos, hijos_jefe$P6080, summary)
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P6080, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
 ```
 
 ```{r}
 ggplot(hijos_jefe, aes(x = as.factor(P6080), y = Hijos)) +
     geom_boxplot() +
-    xlab("p6080")
+    xlab("Étnia") + 
+    ggtitle("Número de hijos por étnia")+
+    theme(plot.title = element_text(hjust = 0.5))
 ```
+
+**Nota:** Dado que la variable establece que a la pregunta *"Se toma información directamente a cada una de las personas del hogar de 18 años o más y de las personas entre 12 y 17 años que trabajen o sean estudiantes universitarios. La información de los menores de 12 años y de los jóvenes entre 12 y 17 años que no trabajen ni estudien en la universidad será suministrada por el padre, la madre o la persona del hogar que está a cargo de su cuidado, excluyendo el servicio doméstico."*, Se considera que esta variable puede ser principalmente util para establecer la étnia del jefe de familia.
+
+### Conclusión
+Segun lo evidenciado en  el gráfico anterior, se concluye que la étnia del jefe de familia no tiene gran incidencia en el número de hijos, pero dado que se presentan  algunas variaciones entre las cajas de cada etnia, se considera dejarla dado que podría jugar un papel importante si se evalúa en conjunto con otras variables.
+
 
 ## 2.2. variable P6087
 Los ecuestados responden a la siguente pregunta: **¿cuál es o fue el nivel de educación más alto alcanzado por el padre de…?**
@@ -130,15 +152,30 @@ Los ecuestados responden a la siguente pregunta: **¿cuál es o fue el nivel de 
 9. Ninguno
 10. No sabe
 
+
 ```{r}
-tapply(hijos_jefe$Hijos, hijos_jefe$P6087, summary)
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P6087, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
 ```
 
 ```{r}
-ggplot(hijos_jefe, aes(x = as.factor(P6087), y = Hijos)) +
+ggplot(subset(hijos_jefe, !is.na(P6087)), aes(x = as.factor(P6087), y = Hijos)) +
     geom_boxplot() +
-    xlab("p6087")
+    xlab("Nivel educativo") + 
+    ggtitle("Número de hijos según el nivel educativo de los padres \n del jefe del hogar")+
+    theme(plot.title = element_text(hjust = 0.5))
 ```
+
+**Nota**: En este caso se hace referencia a los padres del jefe de familia, dado que la variable contempla que *"Se busca establecer el nivel más alto de estudios que alcanzó el padre de la persona entrevistada, cuando este no vive en el hogar o es fallecido"* y *"Lo deben responder todas las personas del hogar. Se toma información directamente a cada una de las personas del hogar de 18 años o más y de las personas entre 12 y 17 años que trabajen o sean estudiantes universitarios"*, de lo anterior se infiere que la población de hijos del jefe de hojar comunmente no responde a esta pregunta. Por lo cual se concluye que esta variable puede ser utilizada principalmente para conocer los antecedentes familiares del jefe de familia, en este caso el nivel educativo de los padres del mismo.
+
+### Conclusión
+La conclusión para esta variable es similar a la anterior, inicialmente del gráfico se nota que el nivel educativo del padres del jefe de familia no tiene gran incidencia en el número de hijos, pero dado que se presentan  algunas variaciones entre algunas cajas, se considera dejarla dado que podría jugar un papel importante si se evalúa en conjunto con otras variables.
 
 ## 2.3. variable P6020
 Los ecuestados responden a la siguente pregunta: **Sexo**
@@ -147,22 +184,34 @@ Los ecuestados responden a la siguente pregunta: **Sexo**
 2. Mujer
 
 ```{r}
-tapply(hijos_jefe$Hijos, hijos_jefe$P6020, summary)
-```
-```{r}
-table(hijos_jefe[ ,c("Hijos", "P6020")])
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P6020, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
 ```
 
-
 ```{r}
-ggplot(hijos_jefe, aes(x = as.factor(P6020), y = Hijos)) +
+ggplot(subset(hijos_jefe, !is.na(P6020)), aes(x = as.factor(P6020), y = Hijos)) +
     geom_boxplot() +
-    xlab("p6020")
+    xlab("Sexo") + 
+    ggtitle("Número de hijos según el sexo del jefe del hogar")+
+    theme(plot.title = element_text(hjust = 0.5))
 ```
+
+### Conclusión:
+En este caso las cajas del gráfico no presentan ningun tipo de diferencia significativa, por lo cual se cuestiona la relevancia de esta varaible, ya que si bien aqui no se presenta evidencia de dependencia, en juego con otras variables podría ser relevante.
+
 
 ## 2.4. variable P415
+Los ecuestados responden a la siguente pregunta: **¿cuántas horas a la semana trabaja normalmente ____ en ese trabajo ?**
 
+Obtención de los datos de fuerza de trabajo
 ```{r}
+
 #Se almacena el url del archivo
 url <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13711"
 
@@ -175,7 +224,10 @@ nombre_archivo<-"Fuerza de trabajo.csv"
 #Se descarga la base de datos usando la función creada previamente
 descargar_bd(url, ruta_destino, nombre_archivo)
 ```
+
+Lectura de los datos de fuerza de trabajo
 ```{r}
+#Lectura de la base de datos de fuerza de trabajo
 fuerza_trabajo <- read.csv2(
   file = "./datos/Fuerza de trabajo.csv",
   sep = ";",
@@ -185,19 +237,42 @@ fuerza_trabajo <- read.csv2(
 #Se cambia el nombre de la primera columna
 colnames(fuerza_trabajo)[1] <- "Directorio"
 
+#De los jefes de familia de la base de datos de fuerza de trabajo se selecciona
+#la variable que mide las horas trabajadas semanalmente
 fuerza_trabajo <- fuerza_trabajo %>% filter(ORDEN == 1) %>% select(Directorio,P415)
 
+#Se añade la variable al conjunto de datos hijos_jefe
 hijos_jefe <- merge(hijos_jefe, fuerza_trabajo, by = "Directorio", all = TRUE)
-
-ggplot(subset(hijos_jefe, !is.na(P415)), aes(x = P415, y = Hijos))+
-    geom_point()
 ```
 
+Gráfico de dispersión
+```{r}
+#Se raliza el gráfico de dispersión del numero de hijos por las horas trabajadas
+#semanalmente
+ggplot(subset(hijos_jefe, !is.na(P415)), aes(x = P415, y = Hijos))+
+    geom_point() +
+    xlab("Horas trabajadas semanalmente") + 
+    ggtitle("Número de hijos vs el número de horas trabajadas semanalmente
+            por el jefe del hogar")+
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+Calculo del indice de correlación
 ```{r}
 hijos_jefe %>% select(Hijos, P415) %>% filter(!is.na(P415)) %>% cor()
 ```
 
+### Conclusión:
+Se concluye que el número de horas trabajadas por el jefe de familia no tiene relación con el número de hijos.
+
+
 ## 2.5. variable P8520S3
+Los ecuestados responden a la siguente pregunta: **¿Con cuáles de los siguientes servicios públicos, privados o comunales cuenta la vivienda?** 3. Alcantarillado
+
+  1. Sí
+  2. No
+  
+Descarga del conjunto de datos "Datos de la vivienda"
 ```{r}
 #Se almacena el url del archivo
 url <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13705"
@@ -211,7 +286,7 @@ nombre_archivo<-"Datos de la vivienda.csv"
 #Se descarga la base de datos usando la función creada previamente
 descargar_bd(url, ruta_destino, nombre_archivo)
 ```
-
+Lectura de los datos de la vivienda
 ```{r}
 datos_vivienda <- read.csv2(
   file = "./datos/datos de la vivienda.csv",
@@ -225,9 +300,89 @@ colnames(datos_vivienda)[1] <- "Directorio"
 datos_vivienda <- datos_vivienda %>% select(Directorio, P8520S3) 
 
 hijos_jefe <- merge(hijos_jefe, datos_vivienda, by = "Directorio", all = TRUE)
-
-ggplot(hijos_jefe, aes(x = as.factor(P8520S3), y = Hijos))+
-    geom_boxplot()+
-    xlab("P8520S3")
 ```
 
+Resumen numerico de los datos de la vivienda
+```{r}
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P8520S3, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P8520S3), y = Hijos)) +
+    geom_boxplot() +
+    xlab("Alcantarillado") + 
+    ggtitle("Número de hijos según la tenencia de alcantarillado")+
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Conclusión:
+Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que la tenencia de alcantarillado en el hogar no tiene relación con el número de hijos por hogar.
+
+# 3. Estudio de las variables del conjunto de datos "Tenencia y financiación de la vivienda que ocupa el hogar"
+
+Lectura del conjunto de datos
+```{r}
+tenencia <- read.csv2(
+  file = "./datos/Tenencia y financiación de la vivienda que ocupa el hogar.csv",
+  sep = ";",
+  dec = ","
+  )
+
+#Se cambia el nombre de la primera columna
+colnames(tenencia)[1] <- "Directorio"
+```
+
+## 3.1. P5095
+Los ecuestados responden a la siguente pregunta: **La vivienda ocupada por este hogar es:** 
+
+1. Propia, totalmente pagada
+2. Propia, la están pagando
+3. En arriendo o subarriendo
+4. Con permiso del propietario, sin pago alguno (usufructuario)
+5. Posesión sin título (ocupante de hecho)
+6. Propiedad colectiva
+
+Unión de la variable con el conjunto de datos de jefe de hogar
+```{r}
+
+datos_vivienda <- tenencia %>% select(Directorio, P5095)
+
+hijos_jefe <- merge(hijos_jefe, datos_vivienda, by = "Directorio", all = TRUE)
+```
+
+
+Resumenes numéricos
+```{r}
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P5095, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
+```
+
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P5095)), aes(x = as.factor(P5095), y = Hijos)) +
+    geom_boxplot() +
+    xlab("Tipo de vivienda") + 
+    ggtitle("Número de hijos según el tipo de vivienda")+
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+### Conclusión:
+Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que el tipo de vivienda no tiene relación con el número de hijos por hogar.
+
+
+
+## Nota:
+Dado que el resto de variables del conjunto dependen de desta y no se aprecia una relación importante con el numero de hijos, **no se consideran**.
