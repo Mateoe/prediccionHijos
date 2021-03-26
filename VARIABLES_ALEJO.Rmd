@@ -34,6 +34,7 @@ educacion <- read.csv("Educación.csv",sep = ";", dec = ",")
 fuerza_trabajo <- read.csv("Fuerza de trabajo.csv", sep = ";", dec = ",")
 compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv", sep=";", dec=",")
 datos_vivienda <- read.csv('Datos de la vivienda.csv', sep = ";", dec = ",")
+uso_energetico <- read.csv('Uso de energéticos del hogar.csv', sep=";", dec = ",")
 ```
 
 ```{r}
@@ -41,10 +42,12 @@ colnames(compo_hogar)[1] <- "DIRECTORIO"
 colnames(educacion)[1] <- "DIRECTORIO"
 colnames(fuerza_trabajo)[1] <- "DIRECTORIO"
 colnames(datos_vivienda)[1] <- "DIRECTORIO"
+colnames(uso_energetico)[1] <- "DIRECTORIO"
 compo_hogar$DIRECTORIO <- as.factor(compo_hogar$DIRECTORIO)
 educacion$DIRECTORIO <- as.factor(educacion$DIRECTORIO)
 fuerza_trabajo$DIRECTORIO <- as.factor(fuerza_trabajo$DIRECTORIO)
 datos_vivienda$DIRECTORIO <- as.factor(datos_vivienda$DIRECTORIO)
+uso_energetico$DIRECTORIO <- as.factor(uso_energetico$DIRECTORIO)
 ```
 
 # Número de hijos 
@@ -93,7 +96,6 @@ cor(compo_hijos$P6040, compo_hijos$Hijos)
 ```{r}
 p8<-ggplot(compo_hijos, aes(x=P6040, y=Hijos))
 p8 <- p8 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
-#p8 <- p8 + geom_abline(slope = 0.0000007, intercept = 1.231092)
 p8<-p8+xlab("Edad")+ylab("Cantidad de hijos")
 p8<-p8+ggtitle("Edad vs cantidad de hijos")+theme_bw()
 p8
@@ -379,10 +381,54 @@ P1 <- ggplot(vivi_hijos, aes(x=P5661S5, y=Hijos))+
 P1
 ```
 
-## Base de datos adicional: Uso de energéticos en el hogar
+# Base de datos adicional: Uso de energéticos en el hogar
 
 Respecto a esta base de datos las variables que resultarán de particular interés son las situientes:
   
   * P5018: ¿Cuánto pagaro en la ultima factura de energía
   * P8524S1: Cantidad de meses al que corresponde el pago de esa factura
+  
+## P5018: Consumo de energía ultima factura 
+
+Variable de tipo numérica que contiene la información a la pregunta: ¿Cuánto pagaron EL MES PASADO o la última vez por la electricidad consumida?
+
+```{r}
+energia_hijos <- merge(x = uso_energetico, y = hijos_hogar, by = 'DIRECTORIO', all=TRUE)
+energia_hijos$Hijos[is.na(energia_hijos$Hijos)] <- 0
+summary(energia_hijos$P5018)
+```
+
+Algunos gráficos de utilidad 
+
+```{r}
+p8<-ggplot(energia_hijos, aes(x=P5018, y=Hijos))
+p8 <- p8 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+#p8 <- p8 + geom_abline(slope = 0.0000007, intercept = 1.231092)
+p8<-p8+xlab("Pago en energia")+ylab("Cantidad de hijos")
+p8<-p8+ggtitle("Pago en energía vs cantidad de hijos")+theme_bw()
+p8
+```
+
+```{r}
+s_energia_hijos <- subset(energia_hijos, !is.na(energia_hijos$P5018))
+cor(s_energia_hijos$P5018, s_energia_hijos$Hijos)
+```
+Se observa una correlación positiva demasiado leve, indicio de que quizá no vaya a ser de mayor utilidad en la explicación de la variable de respuesta. 
+
+```{r}
+mod_energia <- lm(Hijos ~ P5018, data=s_energia_hijos)
+summary(mod_energia)
+```
+
+La variabilidad explicada es demasiado baja, sumado a la evidencia de correlación da indicios para descartar. 
+
+
+## P8524S1: Cantidad de meses al que corresponde el pago de esa factura
+
+En tanto se considera descartar la variable anterior, no tiene sentido considerar esta, puesto que sólo tiene utilidad bajo el aporte significativo de la variable anterior. 
+
+
+
+
+
 
