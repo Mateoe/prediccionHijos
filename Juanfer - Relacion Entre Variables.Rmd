@@ -195,7 +195,7 @@ tapply(hijos_jefe$Hijos, hijos_jefe$P2059, summary)
 ggplot(hijos_jefe, aes(x = as.factor(P2059), y = Hijos)) +  geom_boxplot() + xlab("P2059")
 ```
 
-## variable P5502 (Características y Composición del Hogar)
+## Variable P5502 (Características y Composición del Hogar)
 
 Los encuestados responden a la siguente pregunta: **Actualmente…**
 
@@ -244,14 +244,14 @@ auxiliar_datos <- csv_educacion %>% filter(ORDEN == 1) %>% select(Directorio, P6
 
 auxiliar_merge <- merge(hijos_jefe, csv_educacion, by = "Directorio", all = TRUE)
 
-ggplot(subset(auxiliar_merge, !is.na(P8634)), aes(x = P6218, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
+ggplot(subset(auxiliar_merge, !is.na(P6218)), aes(x = P6218, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
 ```
 
 ```{r}
 #hijos_jefe %>% select(Hijos, P415) %>% filter(!is.na(P415)) %>% cor()
 ```
 
-## P8520S1 (Datos de la Vivienda)
+## Variable P8520S1 (Datos de la Vivienda)
 
 Los encuestados responden a la siguente pregunta: **¿Con cuáles de los siguientes servicios públicos, privados o comunales cuenta la vivienda? 1. Energía eléctrica**
 
@@ -263,7 +263,23 @@ auxiliar_datos <- csv_vivienda %>% filter(ORDEN == 1) %>% select(Directorio, P85
 
 auxiliar_merge <- merge(hijos_jefe, csv_vivienda, by = "Directorio", all = TRUE)
 
-ggplot(subset(auxiliar_merge, !is.na(P8634)), aes(x = P6218, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2))
+ggplot(subset(auxiliar_merge, !is.na(P8520S1)), aes(x = P8520S1, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2))
 ```
 
-P1070     (Datos de la Vivienda)
+## Variable P1070 (Datos de la Vivienda)
+
+Los encuestados responden a la siguente pregunta: **Tipo de vivienda**
+
+1. Casa
+2. Apartamento
+3. Cuarto(s)
+4. Vivienda tradicional indigena
+5. Otro (carpa, contenedor, vagón, embarcación, cueva, refugio natural, etc)
+
+```{r}
+#auxiliar_datos <- csv_vivienda %>% filter(ORDEN == 1) %>% select(Directorio, P8520S1)
+
+#auxiliar_merge <- merge(hijos_jefe, csv_vivienda, by = "Directorio", all = TRUE)
+
+ggplot(subset(auxiliar_merge, !is.na(P1070)), aes(x = P1070, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2,3,4,5))
+```
