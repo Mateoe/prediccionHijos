@@ -125,11 +125,19 @@ kable(tabla, row.names = TRUE)
 ```
 
 ```{r}
+mean_P6080 <- hijos_jefe %>% 
+  select(P6080,Hijos) %>% 
+  filter(!is.na(P6080)) %>% 
+  group_by(P6080) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
 ggplot(hijos_jefe, aes(x = as.factor(P6080), y = Hijos)) +
     geom_boxplot() +
     xlab("Étnia") + 
     ggtitle("Número de hijos por étnia")+
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5))+
+    geom_point(mean_P6080, mapping = aes(x = as.factor(P6080), y = Hijos),
+               col = "Red")
 ```
 
 **Nota:** Dado que la variable establece que a la pregunta *"Se toma información directamente a cada una de las personas del hogar de 18 años o más y de las personas entre 12 y 17 años que trabajen o sean estudiantes universitarios. La información de los menores de 12 años y de los jóvenes entre 12 y 17 años que no trabajen ni estudien en la universidad será suministrada por el padre, la madre o la persona del hogar que está a cargo de su cuidado, excluyendo el servicio doméstico."*, Se considera que esta variable puede ser principalmente util para establecer la étnia del jefe de familia.
@@ -164,12 +172,22 @@ tabla<-do.call(rbind, resumen_numerico)
 kable(tabla, row.names = TRUE)
 ```
 
+
 ```{r}
+mean_P6087 <- hijos_jefe %>% 
+  select(P6087,Hijos) %>% 
+  filter(!is.na(P6087)) %>% 
+  group_by(P6087) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
+
 ggplot(subset(hijos_jefe, !is.na(P6087)), aes(x = as.factor(P6087), y = Hijos)) +
     geom_boxplot() +
     xlab("Nivel educativo") + 
     ggtitle("Número de hijos según el nivel educativo de los padres \n del jefe del hogar")+
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5))+
+    geom_point(mean_P6087, mapping = aes(x = as.factor(P6087), y = Hijos),
+               col = "Red")
 ```
 
 **Nota**: En este caso se hace referencia a los padres del jefe de familia, dado que la variable contempla que *"Se busca establecer el nivel más alto de estudios que alcanzó el padre de la persona entrevistada, cuando este no vive en el hogar o es fallecido"* y *"Lo deben responder todas las personas del hogar. Se toma información directamente a cada una de las personas del hogar de 18 años o más y de las personas entre 12 y 17 años que trabajen o sean estudiantes universitarios"*, de lo anterior se infiere que la población de hijos del jefe de hojar comunmente no responde a esta pregunta. Por lo cual se concluye que esta variable puede ser utilizada principalmente para conocer los antecedentes familiares del jefe de familia, en este caso el nivel educativo de los padres del mismo.
@@ -195,11 +213,19 @@ kable(tabla, row.names = TRUE)
 ```
 
 ```{r}
+mean_P6020 <- hijos_jefe %>% 
+  select(P6020,Hijos) %>% 
+  filter(!is.na(P6020)) %>% 
+  group_by(P6020) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
 ggplot(subset(hijos_jefe, !is.na(P6020)), aes(x = as.factor(P6020), y = Hijos)) +
     geom_boxplot() +
     xlab("Sexo") + 
     ggtitle("Número de hijos según el sexo del jefe del hogar")+
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5))+
+    geom_point(mean_P6020, mapping = aes(x = as.factor(P6020), y = Hijos),
+               col = "Red")
 ```
 
 ### Conclusión:
@@ -315,15 +341,77 @@ kable(tabla, row.names = TRUE)
 ```
 
 ```{r}
+mean_P8520S3 <- hijos_jefe %>% 
+  select(P8520S3,Hijos) %>% 
+  filter(!is.na(P8520S3)) %>% 
+  group_by(P8520S3) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
 ggplot(hijos_jefe, aes(x = as.factor(P8520S3), y = Hijos)) +
     geom_boxplot() +
     xlab("Alcantarillado") + 
     ggtitle("Número de hijos según la tenencia de alcantarillado")+
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_point(mean_P8520S3, mapping = aes(x = as.factor(P8520S3), y = Hijos),
+               col = "Red")
+  
 ```
 
 ### Conclusión:
 Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que la tenencia de alcantarillado en el hogar no tiene relación con el número de hijos por hogar.
+
+## 2.6. variable P1899
+
+Los ecuestados responden a la siguente pregunta: **En general, qué tan satisfecho(a) se siente ... con su trabajo/actividad actualmente?**
+
+10. Totalmente satisfecho(a)
+9.
+8.
+7.
+6.
+5.
+4.
+3.
+2.
+1.
+0. Totalmente insatisfecho(a)
+
+Resumenes numericos
+```{r}
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P1899, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
+
+```
+
+Creación del boxplot
+```{r}
+
+mean_P1899 <- hijos_jefe %>% 
+  select(P1899,Hijos) %>% 
+  filter(!is.na(P1899)) %>% 
+  group_by(P1899) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
+ggplot(subset(hijos_jefe, !is.na(P1899)), aes(x = as.factor(P1899), y = Hijos)) +
+    geom_boxplot() +
+    xlab("Satisfacción con la actividad/trabajo que realiza") + 
+    ggtitle("Número de hijos según la satisfacción con \n la actividad/trabajo que realiza")+
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_point(mean_P1899, mapping = aes(x = as.factor(P1899), y = Hijos),
+               col = "Red")
+  
+  
+```
+
+### Conclusión:
+Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que el tipo de vivienda no tiene relación con el número de hijos por hogar.
+
 
 # 3. Estudio de las variables del conjunto de datos "Tenencia y financiación de la vivienda que ocupa el hogar"
 
@@ -357,7 +445,6 @@ datos_vivienda <- tenencia %>% select(Directorio, P5095)
 hijos_jefe <- merge(hijos_jefe, datos_vivienda, by = "Directorio", all = TRUE)
 ```
 
-
 Resumenes numéricos
 ```{r}
 #Resumenes numericos
@@ -370,17 +457,27 @@ tabla<-do.call(rbind, resumen_numerico)
 kable(tabla, row.names = TRUE)
 ```
 
+Creación del boxplot
 ```{r}
+mean_P5095 <- hijos_jefe %>% 
+  select(P5095,Hijos) %>% 
+  filter(!is.na(P5095)) %>% group_by(P5095) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
 ggplot(subset(hijos_jefe, !is.null(P5095)), aes(x = as.factor(P5095), y = Hijos)) +
     geom_boxplot() +
     xlab("Tipo de vivienda") + 
     ggtitle("Número de hijos según el tipo de vivienda")+
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_point(mean_P5095, mapping = aes(x = as.factor(P5095), y = Hijos),
+               col = "Red")
 ```
 
 
 ### Conclusión:
 Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que el tipo de vivienda no tiene relación con el número de hijos por hogar.
+
+**Duda con el comportamiento de la media.**
 
 
 
