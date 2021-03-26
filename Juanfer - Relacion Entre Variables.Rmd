@@ -92,27 +92,35 @@ csv_educacion <- read.csv2(file = paste("./Datos/", nombre_educacion, sep=""), s
 csv_vivienda <- read.csv2(file = paste("./Datos/", nombre_vivienda, sep=""), sep = ";", dec = ",")
 ```
 
-Corrigiendo el nombre de la primera columna para todos los csv
+Corrigiendo el nombre de la primera columna para todos los csv y observando el resultado
 ```{r}
 #Se cambia el nombre de la primera columna
 colnames(csv_caracteristicas)[1] <- "Directorio"
 colnames(csv_trabajo)[1] <- "Directorio"
 colnames(csv_educacion)[1] <- "Directorio"
 colnames(csv_vivienda)[1] <- "Directorio"
+```
 
-#Nombre de las columnas
-print("Características y Composición del Hogar")
-colnames(csv_caracteristicas); cat("\n")
+### Características y Composición del Hogar
+```{r}
+colnames(csv_caracteristicas)
+```
 
-print("Fuerza de Trabajo")
-colnames(csv_trabajo); cat("\n")
+### Fuerza de Trabajo
+```{r}
+colnames(csv_trabajo)
+```
 
-print("Educación")
-colnames(csv_educacion); cat("\n")
+### Educación
+```{r}
+colnames(csv_educacion)
+```
 
-print("Datos de la Vivienda")
+### Datos de la Vivienda
+```{r}
 colnames(csv_vivienda)
 ```
+
 # Estudio de las Variables Asignadas
 
 En este caso las variables asignadas son:
