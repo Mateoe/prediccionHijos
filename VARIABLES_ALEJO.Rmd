@@ -17,14 +17,16 @@ library(ggplot2)
 
 ## Carga de las bases de datos
 
-"P6040", "P8587", "P6435", "P5661s5", "P6240", "p8586"
+Las variables que han sido asignadas son las siguientes:
 
-* P6040 Edad BD: Características y composición del hogar
-* P8587 Nivel educativo más alto alcanzado BD: Educación
-* P6435 Tipo de trabajo BD: Fuerza trabajo
-* P5661S5 Invasión de espacio público BD: Datos vivienda
-* P6240 Ocupación semana anterior BD: Fuerza trabajo
-* P8586 ¿Estudia actualmente? BD: Educación 
+* **P6040:** Edad BD: Características y composición del hogar
+* **P8587:** Nivel educativo más alto alcanzado BD: Educación
+* **P6435:** Tipo de trabajo BD: Fuerza trabajo
+* **P5661S5:** Invasión de espacio público BD: Datos vivienda
+* **P6240:** Ocupación semana anterior BD: Fuerza trabajo
+* **P8586:** ¿Estudia actualmente? BD: Educación 
+
+**NOTA:** De entrada se ha decidio descartar la variable **P6240** en tanto tras consideración posterior, se observó que responde a una característica demasiado específica e individual. 
 
 ```{r}
 #setwd()  #Pa que definan la ruta de su directorio
@@ -55,11 +57,62 @@ hijos_hogar <- directorio_P6051 %>% filter(P6051 == 3) %>% count(DIRECTORIO)
 colnames(hijos_hogar)[2] <- "Hijos"
 nrow(hijos_hogar)
 ```
-## Educacion + número de hijos
+Véanse ahora algunas seccions que corresponden a la base de datos considerada en adición con el número de hijos, y el listado de variables que de cada una de esas base se analizó. 
+
+
+## Características del hogar + número de hijos
+
+Al construir la intersección de información entre características del hogar e hijos_hogar, se debe abordar el estudio de la variable  **P6040:** Edad. En particular resultará de interés la edad de la persona cabeza de familia con relación al número de hijos. 
 
 ```{r}
 compo_hogar %>% 
   filter(P6051==1) -> cabezas_de_familia
+
+compo_hijos <- merge(x = cabezas_de_familia, y = hijos_hogar, by = 'DIRECTORIO', all=TRUE)
+compo_hijos$Hijos[is.na(compo_hijos$Hijos)] <- 0
+summary(cabezas_de_familia$P6040)
+```
+
+Véase el siguiente histograma de frecuencias para la edad de las cabezas de familia.
+
+```{r}
+h1 <- ggplot(compo_hijos, aes(x=P6040))
+h1 <- h1 + geom_histogram(binwidth = 1, col='black', fill='blue', alpha=0.4)
+h1 <- h1 + xlab("EDAD")+ylab("FRECUENCIA")
+h1 <- h1 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA EDAD")+theme_bw()
+h1
+```
+
+Y ahora la relación de esas edades con el número de hijos
+
+```{r}
+cor(compo_hijos$P6040, compo_hijos$Hijos)
+```
+
+
+```{r}
+p8<-ggplot(compo_hijos, aes(x=P6040, y=Hijos))
+p8 <- p8 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+#p8 <- p8 + geom_abline(slope = 0.0000007, intercept = 1.231092)
+p8<-p8+xlab("Edad")+ylab("Cantidad de hijos")
+p8<-p8+ggtitle("Edad vs cantidad de hijos")+theme_bw()
+p8
+```
+
+La cantidad de hijos en hogares donde la cabeza de hogar tiene entre 25 y 50 suele tener cierta estabilida como "meseta" y además es la región en donde se presentan los valores máximos. Además, con una correlación de -0.23, se puede evidenciar que a mayor edad, menor cantidad de hijos.
+
+```{r}
+mod_edad <- lm(Hijos ~ P6040, data=compo_hijos)
+summary(mod_edad)
+```
+
+Se observa además que en la explicación de la cantidad de hijos, la variable edad presenta una alta significancia (considerar que en este caso no se cumplen los supuestos del modelo de regresión; sólo se busca evidencia de significancia)
+
+
+
+## Educacion + número de hijos
+
+```{r}
 hijos_del_cabeza <- merge(cabezas_de_familia, hijos_hogar, by = 'DIRECTORIO', all = TRUE)
 #hijos_del_cabeza$Hijos[is.na(hijos_del_cabeza)] <- 0
 edu_hijos <- merge(x = hijos_hogar, y = educacion, by = 'DIRECTORIO',all = TRUE)
@@ -287,7 +340,7 @@ P1
 ## Datos vivienda + número de hijos 
 
 ```{r}
-vivi_hijos <- merge(x = datos_vivienda, y = hijos_hogar, by = 'DIRECTORIO',all = TRUE)
+vivi_hijos <- merge(x = hijos_hogar, y = datos_vivienda, by = 'DIRECTORIO',all = TRUE)
 #vivi_hijos$Hijos[is.na(vivi_hijos$Hijos)] <- 0
 #vivi_hijos$Hijos[vivi_hijos$ORDEN!=1 & vivi_hijos$ORDEN!=2] <- 0 
 ```
@@ -313,9 +366,9 @@ P2 <- P2 + labs(title = " Frecuencia de problemas - Invasión espacio publico")+
 P2
 ```
 
-Ahora la relación de la variable con la cantidad de hijos en el hogar
+**NOTA:** Ahora la relación de la variable con la cantidad de hijos en el hogar no es sposible en tanto los directorios de la base de datos hijos_hogar difieren todos de los directorios de la base de datos datos_vivienda.
 
-```{r message=FALSE, warning=FALSE}
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 P1 <- ggplot(vivi_hijos, aes(x=P5661S5, y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'red',outlier.fill = 'red',outlier.size = 3)+
