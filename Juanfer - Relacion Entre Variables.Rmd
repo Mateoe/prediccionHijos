@@ -173,6 +173,8 @@ auxiliar_datos <- csv_trabajo %>% filter(ORDEN == 1) %>% select(Directorio, P863
 auxiliar_merge <- merge(hijos_jefe, csv_trabajo, by = "Directorio", all = TRUE)
 
 ggplot(subset(auxiliar_merge, !is.na(P8634)), aes(x = P8634, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10))
+
+ggplot(auxiliar_merge, aes(x = as.factor(P8634), y = Hijos)) +  geom_boxplot() + xlab("P8634")
 ```
 
 ## Variable P2059 (Características y Composición del Hogar)
@@ -213,9 +215,7 @@ tapply(hijos_jefe$Hijos, hijos_jefe$P5502, summary)
 table(hijos_jefe[c("Hijos", "P5502")])
 ```
 ```{r}
-ggplot(hijos_jefe, aes(x = as.factor(P5502), y = Hijos)) +
-    geom_boxplot() +
-    xlab("P5502")
+ggplot(hijos_jefe, aes(x = as.factor(P5502), y = Hijos)) + geom_boxplot() + xlab("P5502")
 ```
 
 ## Variable P6218 (Educación)
@@ -245,6 +245,8 @@ auxiliar_datos <- csv_educacion %>% filter(ORDEN == 1) %>% select(Directorio, P6
 auxiliar_merge <- merge(hijos_jefe, csv_educacion, by = "Directorio", all = TRUE)
 
 ggplot(subset(auxiliar_merge, !is.na(P6218)), aes(x = P6218, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
+
+ggplot(auxiliar_merge, aes(x = as.factor(P6218), y = Hijos)) +  geom_boxplot() + xlab("P6218")
 ```
 
 ```{r}
@@ -264,6 +266,8 @@ auxiliar_datos <- csv_vivienda %>% filter(ORDEN == 1) %>% select(Directorio, P85
 auxiliar_merge <- merge(hijos_jefe, csv_vivienda, by = "Directorio", all = TRUE)
 
 ggplot(subset(auxiliar_merge, !is.na(P8520S1)), aes(x = P8520S1, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2))
+
+ggplot(auxiliar_merge, aes(x = as.factor(P8520S1), y = Hijos)) +  geom_boxplot() + xlab("P8520S1")
 ```
 
 ## Variable P1070 (Datos de la Vivienda)
@@ -282,4 +286,6 @@ Los encuestados responden a la siguente pregunta: **Tipo de vivienda**
 #auxiliar_merge <- merge(hijos_jefe, csv_vivienda, by = "Directorio", all = TRUE)
 
 ggplot(subset(auxiliar_merge, !is.na(P1070)), aes(x = P1070, y = Hijos)) + geom_point() + scale_x_continuous(breaks=c(1,2,3,4,5))
+
+ggplot(auxiliar_merge, aes(x = as.factor(P1070), y = Hijos)) +  geom_boxplot() + xlab("P1070")
 ```
