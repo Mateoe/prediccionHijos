@@ -343,7 +343,7 @@ P1
 
 ```{r}
 vivi_hijos <- merge(x = hijos_hogar, y = datos_vivienda, by = 'DIRECTORIO',all = TRUE)
-#vivi_hijos$Hijos[is.na(vivi_hijos$Hijos)] <- 0
+vivi_hijos$Hijos[is.na(vivi_hijos$Hijos)] <- 0
 #vivi_hijos$Hijos[vivi_hijos$ORDEN!=1 & vivi_hijos$ORDEN!=2] <- 0 
 ```
 
@@ -368,7 +368,20 @@ P2 <- P2 + labs(title = " Frecuencia de problemas - Invasión espacio publico")+
 P2
 ```
 
-**NOTA:** Ahora la relación de la variable con la cantidad de hijos en el hogar no es sposible en tanto los directorios de la base de datos hijos_hogar difieren todos de los directorios de la base de datos datos_vivienda.
+
+```{r message=FALSE, warning=FALSE}
+vivi_hijos$P5661S5 <- as.factor(vivi_hijos$P5661S5)
+P1 <- ggplot(subset(vivi_hijos, vivi_hijos$ORDEN==1), aes(x=P5661S5, y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'red',outlier.fill = 'red',outlier.size = 3)+
+  labs(title = 'Problemas invasión espacio público',subtitle = ' ',caption = ' ',
+       x = 'Frecuencia de los problemas', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P1
+```
+
+
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 P1 <- ggplot(vivi_hijos, aes(x=P5661S5, y=Hijos))+
