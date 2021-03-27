@@ -1,0 +1,148 @@
+---
+title: "Creación base de datos"
+author: "Alejandro Bedoya Cataño"
+date: "26/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Carga de librerías
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(dplyr)
+```
+
+
+# Carga de las bases de datos
+
+Bases de datos que contienen las variables 'definitivas' a utilizar.
+
+```{r}
+#setwd()  #Pa que definan la ruta de su directorio
+educacion <- read.csv("Educación.csv",sep = ";", dec = ",")
+fuerza_trabajo <- read.csv("Fuerza de trabajo.csv", sep = ";", dec = ",")
+compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv", sep=";", dec=",")
+datos_vivienda <- read.csv('Datos de la vivienda.csv', sep = ";", dec = ",")
+uso_energetico <- read.csv('Uso de energéticos del hogar.csv', sep=";", dec = ",")
+servi_hogar <- read.csv('Servicios del hogar.csv', sep = ";", dec = ",")
+```
+
+**Renombrando los directorios:**
+
+```{r}
+colnames(compo_hogar)[1] <- "DIRECTORIO"
+colnames(educacion)[1] <- "DIRECTORIO"
+colnames(fuerza_trabajo)[1] <- "DIRECTORIO"
+colnames(datos_vivienda)[1] <- "DIRECTORIO"
+colnames(uso_energetico)[1] <- "DIRECTORIO"
+colnames(servi_hogar)[1] <- 'DIRECTORIO'
+```
+
+# Calculo del total de hijos para cada hogar
+
+```{r}
+#Se seleccionan las columnas directorio y P6051
+directorio_P6051 <- compo_hogar %>% select(DIRECTORIO,P6051)
+#Se cuentan el numero de hijos por hogar
+hijos_hogar <- directorio_P6051 %>% filter(P6051 == 3) %>% count(DIRECTORIO)
+colnames(hijos_hogar)[2] <- "Hijos"
+compo_hogar2 <- merge(x = compo_hogar, y = hijos_hogar, by = "DIRECTORIO")
+nrow(hijos_hogar)
+```
+
+
+
+```{r}
+#Se filtra el parentezco dejando solo a los jefes de hogar
+jefe_hogar <- compo_hogar %>% filter(P6051 == 1 & SECUENCIA_P ==1)
+
+#Se asocian los hijos a cada jefe de hogar
+hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "DIRECTORIO", all.x = TRUE)
+
+#A los jefe de hogar sin hijos se les establecen cero hijos
+hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
+```
+
+
+# Filtración - cabezas de familia 
+
+Se reducirá cada base de datos inicial a sólo los registros que consideren 
+
+```{r}
+educacion %>% 
+  filter(ORDEN==1 & SECUENCIA_P ==1) -> edu_filtrada; nrow(edu_filtrada)
+fuerza_trabajo %>% 
+  filter(ORDEN==1 & SECUENCIA_P ==1) -> fuerza_trabajo_filtrada; nrow(fuerza_trabajo_filtrada)
+compo_hogar %>% 
+  filter(ORDEN==1 & SECUENCIA_P ==1) -> compo_hogar_filtrada; nrow (compo_hogar_filtrada)
+datos_vivienda %>% 
+  filter(ORDEN==1 & SECUENCIA_P ==1) -> datos_vivienda_filtrada; nrow(datos_vivienda_filtrada)
+uso_energetico %>% 
+  filter(ORDEN==1 & SECUENCIA_P ==1) -> uso_energetico_filtrada; nrow(uso_energetico_filtrada)
+servi_hogar %>%
+  filter(ORDEN==1 & SECUENCIA_P ==1) -> servi_hogar_filtrada; nrow(servi_hogar_filtrada)
+```
+# Union de todas las bases 
+
+```{r}
+BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe, edu_filtrada, 
+                                                      fuerza_trabajo_filtrada,
+                                                      datos_vivienda_filtrada,
+                                                      servi_hogar_filtrada))
+BASE_FINAL %>% 
+  relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
+```
+
+
+# Creación del archivo - BASE_FINAL.csv
+
+```{r}
+write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
