@@ -1,0 +1,354 @@
+---
+title: "analisis"
+author: "Sebastian Agudelo Jimenez"
+date: "22/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+#librerias 
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+```
+
+# Vrbls. de Caracteristicas y composicion del hogar
+```{r}
+cch <- read.csv("Caracteristicas y composicion del hogar.csv", sep = ";")
+nombres <- names(cch)
+nombres[1]<-"DIRECTORIO"
+colnames(cch)<- nombres
+cch$DIRECTORIO<- as.factor(cch$DIRECTORIO)
+#sacando los hijos
+hijos <- cch %>% filter(P6051==3) %>% count(DIRECTORIO) 
+hijosxcch <- merge(x = hijos, y = cch, all= TRUE) 
+hijosxcch$n[is.na(hijosxcch$n)] <- 0 
+#sacando la cabeza del hogar
+cabh <- cch %>% filter(P6051==1)
+hijoscab<- merge(x = hijos, y = cabh, all= TRUE)
+hijoscab$n[is.na(hijoscab$n)] <- 0
+hijoscabx<- hijoscab[,1:2]
+```
+
+## P6083: Madre en el hogar
+Corresponde a la pregunta: **La madre de ____ ¿vive en este hogar?**
+Las respuestas son:
+1. Sí
+2. No
+3. Fallecida
+
+```{r}
+tapply(hijoscab$n, hijoscab$P6083, summary)
+ggplot(hijoscab, aes(x=P6083)) + geom_bar()
+ggplot(hijoscab, aes(x = factor(P6083), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+no se considera?
+
+## P6088: Nivel de educación de la madre
+Corresponde a la pregunta: **Cuál es o fue el nivel de educación más alto alcanzado por la madre de …?**
+Las respuestas son:
+1. Algunos años de primaria
+2. Toda la primaria
+3. Algunos años de secundaria
+4. Toda la secundaria
+5. Uno o mas años de técnica o tecnológica
+6. Técnica o tecnológica completa
+7. Uno o mas años de universidad
+8. Universitaria completa
+9. Ninguno
+10. No sabe
+```{r}
+hijoscabna<- hijoscab[!is.na(hijoscab$P6088),]
+tapply(hijoscabna$n, hijoscabna$P6088, summary)
+ggplot(hijoscabna, aes(x=factor(P6088))) + geom_bar()
+ggplot(hijoscabna, aes(x = factor(P6088), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+no se considera
+
+## P2057: Se considera campesino
+Corresponde a la pregunta: **¿Usted se considera campesino(a)?**
+Las respuestas son:
+1. Si
+2. No
+3. No informa
+```{r}
+hijoscabna<- hijoscab[!is.na(hijoscab$P2057),]
+tapply(hijoscabna$n, hijoscabna$P2057, summary)
+ggplot(hijoscabna, aes(x=factor(P2057))) + geom_bar()
+ggplot(hijoscabna, aes(x = factor(P2057), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+no se considera
+
+## P1897: Satisfacción con nivel de salud
+Corresponde a la pregunta: **En general, qué tan satisfecho(a) se siente ... con su salud actualmente?**
+Las respuestas son:
+10. Totalmente satisfecho(a)
+9.
+8.
+7.
+6.
+5.
+4.
+3.
+2.
+1.
+0.Totalmente insatisfecho(a)
+```{r}
+hijoscabna<- hijoscab[!is.na(hijoscab$P1897),]
+tapply(hijoscabna$n, hijoscabna$P1897, summary)
+ggplot(hijoscabna, aes(x=factor(P1897))) + geom_bar()
+ggplot(hijoscabna, aes(x = factor(P1897), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+no se considera
+
+# Vrbls. de Educación
+```{r}
+educ <- read.csv("Educación.csv", sep = ";")
+nombres <- names(educ)
+nombres[1]<-"DIRECTORIO"
+colnames(educ)<- nombres
+educ$DIRECTORIO<- as.factor(educ$DIRECTORIO)
+hijosxeduc <- merge(x = hijoscabx, y = educ)
+```
+## P1101: Jornada de estudio
+Corresponde a la pregunta: **¿En qué jornada estudia ...?**
+Las respuestas son:
+1. Mañana
+2. Tarde
+3. Noche
+4. Única o completa
+5. Fin de semana
+
+```{r}
+hijosxeducna<- hijosxeduc[!is.na(hijosxeduc$P1101),]
+tapply(hijosxeducna$n, hijosxeducna$P1101, summary)
+ggplot(hijosxeducna, aes(x=factor(P1101))) + geom_bar()
+ggplot(hijosxeducna, aes(x = factor(P1101), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+no se considera
+ 
+# Vrbls. de Fuerza de trabajo
+```{r}
+ft<- read.csv("Fuerza de trabajo.csv", sep = ";")
+nombres <- names(ft)
+nombres[1]<-"DIRECTORIO"
+colnames(ft)<- nombres
+ft$DIRECTORIO<- as.factor(ft$DIRECTORIO)
+hijosxft <- merge(x = hijoscabx, y = ft, all=TRUE)
+```
+
+## P421S4: Cuidó o atendió de niños la semana pasada
+Corresponde a la pregunta: **Adicional a las actividades que me informó haber realizado la semana pasada, cuales de las siguientes labores no remuneradas hizo: Cuidar o atender niños (as)?**
+Las respuestas son:
+1. Sí
+2. No
+```{r}
+hijosxftna<- hijosxft[!is.na(hijosxft$P421S4),]
+tapply(hijosxftna$n, hijosxftna$P421S4, summary)
+ggplot(hijosxftna, aes(x=factor(P421S4))) + geom_bar()
+ggplot(hijosxftna, aes(x = factor(P421S4), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+esta no
+
+# Vrbls. de Tecnologías de información y comunicación
+```{r}
+tic <- read.csv("Tecnologías de información y comunicación.csv", sep = ";")
+nombres <- names(tic)
+nombres[1]<-"DIRECTORIO"
+colnames(tic)<- nombres
+tic$DIRECTORIO<- as.factor(tic$DIRECTORIO)
+hijosxtic <- merge(x = hijoscabx, y = tic)
+```
+
+## P1082 Posee celular
+Corresponde a la pregunta: **¿ ____ tiene teléfono celular?**
+Las respuestas son:
+1. Sí
+2. No
+```{r}
+hijosxticna<- hijosxtic[!is.na(hijosxtic$P1082),]
+tapply(hijosxticna$n, hijosxticna$P1082, summary)
+ggplot(hijosxticna, aes(x=factor(P1082))) + geom_bar()
+ggplot(hijosxticna, aes(x = factor(P1082), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+no se considera
+
+## P1082S2 smartphones
+¿ ____ tiene teléfono celular?
+Teléfono celular inteligente (smartphone)
+1. Si
+2. No
+Se adapta para el numero de hijos:
+```{r}
+telefonos <- tic %>% filter(P1082S2==1) %>% count(DIRECTORIO)
+telefonosxtic <- merge(x = telefonos, y = tic, all = TRUE) 
+telefonosxtic$n[is.na(telefonosxtic$n)] <- 0 
+telefonosxtic<-rename(telefonosxtic, "smartf" = n)
+
+hijosxtelefonosxtic <- merge(x = hijoscabx, y = telefonosxtic, all = TRUE)
+# sum(is.na(hijosxtelefonosxtic$n))
+hijosxtelefonosxtic$n[is.na(hijosxtelefonosxtic$n)] <- 0 
+# sum(is.na(hijosxtelefonosxtic$smartf)) no hay
+```
+
+```{r}
+tapply(hijosxtelefonosxtic$n, hijosxtelefonosxtic$smartf, summary)
+ggplot(hijosxtelefonosxtic, aes(x = n, y = smartf)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))  + scale_y_continuous(breaks = seq(0,13,1))
+```
+
+# Vrbls. de Servicios del hogar
+```{r}
+sdh<- read.csv("Servicios del hogar.csv", sep = ";", dec = ",")
+nombres <- names(sdh)
+nombres[1]<-"DIRECTORIO"
+colnames(sdh)<- nombres
+sdh$DIRECTORIO<- as.factor(sdh$DIRECTORIO)
+hijosxsdh <- merge(x = hijoscabx, y = sdh)
+```
+
+## P5000 cuartos
+Corresponde a la pregunta: **Incluyendo sala y comedor, ¿de cuántos cuartos o piezas dispone este hogar?**
+```{r}
+tapply(hijosxsdh$n, hijosxsdh$P5000, summary)
+ggplot(hijosxsdh, aes(x = n, y = P5000)) + geom_point()
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$P5000)
+```
+
+
+
+## P3000 
+Corresponde a la pregunta: **¿Cuál es la fuente de iluminación principal en la vivienda?**
+Las respuestas son:
+1. Energía eléctrica
+2. Lámpara de Gas Propano
+3. Lámpara de Kereosene, petróleo, gasolina
+4. Lámpara de pilas o baterias
+5. Velas
+```{r}
+hijosxsdhna<- hijosxsdh[!is.na(hijosxsdh$P3000),]
+tapply(hijosxsdhna$n, hijosxsdhna$P3000, summary)
+ggplot(hijosxsdhna, aes(x=factor(P3000))) + geom_bar()
+ggplot(hijosxsdhna, aes(x = factor(P3000), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+
+## P5024  
+Corresponde a la pregunta: **¿De cuántos servicios sanitarios o inodoros dispone este hogar? **
+```{r}
+tapply(hijosxsdh$n, hijosxsdh$P5024, summary)
+ggplot(hijosxsdh, aes(x = n, y = P5024)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))  + scale_y_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$P5024)
+```
+
+
+## P8534 
+Corresponde a la pregunta: **El hogar tiene cocina? (espacio exclusivo para preparar alimentos)**
+1. Sí
+2. No
+```{r}
+sum(is.na(hijosxsdh$P8534))/length(hijosxsdh$P8534)
+hijosxsdhna<- hijosxsdh[!is.na(hijosxsdh$P8534),]
+tapply(hijosxsdhna$n, hijosxsdhna$P8534, summary)
+ggplot(hijosxsdhna, aes(x=factor(P8534))) + geom_bar()
+ggplot(hijosxsdhna, aes(x = factor(P8534), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+muchos outliers
+
+#P5013S1 Cantidad de comidas
+Con qué frecuencia preparan alimentos en este hogar?
+Veces al día
+```{r}
+summary(hijosxsdh$P5013S1)
+ggplot(hijosxsdh, aes(x = n, y = P5013S1)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$P5013S1)
+```
+
+## I_HOGAR	
+Corresponde a la pregunta: **Ingreso mensual total del hogar**
+```{r}
+summary(hijosxsdh$I_HOGAR)
+ggplot(hijosxsdh, aes(x = n, y = I_HOGAR)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$I_HOGAR)
+```
+
+## I_UGASTO 
+Corresponde a la pregunta: **Ingreso mensual total de la unidad de gasto**
+```{r}
+summary(hijosxsdh$I_UGASTO)
+ggplot(hijosxsdh, aes(x = n, y = I_UGASTO)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$I_UGASTO)
+```
+
+## PERCAPITA 
+Corresponde a la pregunta: **Ingreso per-cápita**
+```{r}
+summary(hijosxsdh$PERCAPITA)
+ggplot(hijosxsdh, aes(x = n, y = PERCAPITA)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$PERCAPITA)
+```
+
+no creo
+
+## I_OU  
+Corresponde a la pregunta: **Ingreso mensual total de la otra unidad de gasto**
+```{r}
+summary(hijosxsdh$I_OU)
+ggplot(hijosxsdh, aes(x = n, y = I_OU)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$I_OU)
+```
+```{r}
+ggplot(hijosxsdhna, aes(x = factor(n), y = I_OU)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+
+## CANT_PERSONAS_HOGAR 
+Corresponde a la pregunta: **Cantidad de personas en el hogar**
+```{r}
+tapply(hijosxsdh$n, hijosxsdh$CANT_PERSONAS_HOGAR, summary)
+ggplot(hijosxsdh, aes(x = n , y = CANT_PERSONAS_HOGAR)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+```
+```{r}
+cor(hijosxsdh$n, hijosxsdh$CANT_PERSONAS_HOGAR)
+```
+```{r}
+ggplot(hijosxsdhna, aes(x = factor(n), y = CANT_PERSONAS_HOGAR)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+
+```{r}
+plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$I_OU)
+plot(hijosxsdh$n,hijosxsdh$I_OU)
+plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$PERCAPITA)
+plot(hijosxsdh$n,hijosxsdh$PERCAPITA)
+plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$I_UGASTO)
+plot(hijosxsdh$n,hijosxsdh$I_UGASTO)
+plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$I_HOGAR)
+plot(hijosxsdh$n,hijosxsdh$I_HOGAR)
+#P5013S1 Cantidad de comidas
+plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$P5013S1)
+plot(hijosxsdh$n,hijosxsdh$P5013S1)
+## P5000 cuartos
+plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$P5000)
+plot(hijosxsdh$n,hijosxsdh$P5000)
+```
+
+merge(y, z, all = TRUE)
+Reduce(function(x, y) merge(x, y), list(x, y, z))
+
+merge(x = df_1, y = df_2, all.x = TRUE)
+
