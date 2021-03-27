@@ -46,6 +46,13 @@ tapply(hijoscab$n, hijoscab$P6083, summary)
 ggplot(hijoscab, aes(x=P6083)) + geom_bar()
 ggplot(hijoscab, aes(x = factor(P6083), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
 ```
+
+
+```{r}
+href <- hijoscab
+href$P6083[href$P6083==3] <- 2
+ggplot(href, aes(x = factor(P6083), y = n)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
 no se considera?
 
 ## P6088: Nivel de educación de la madre
@@ -197,7 +204,7 @@ hijosxtelefonosxtic$n[is.na(hijosxtelefonosxtic$n)] <- 0
 
 ```{r}
 tapply(hijosxtelefonosxtic$n, hijosxtelefonosxtic$smartf, summary)
-ggplot(hijosxtelefonosxtic, aes(x = n, y = smartf)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))  + scale_y_continuous(breaks = seq(0,13,1))
+ggplot(hijosxtelefonosxtic, aes(x = smartf, y = n)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))  + scale_y_continuous(breaks = seq(0,13,1))
 ```
 
 # Vrbls. de Servicios del hogar
@@ -214,7 +221,7 @@ hijosxsdh <- merge(x = hijoscabx, y = sdh)
 Corresponde a la pregunta: **Incluyendo sala y comedor, ¿de cuántos cuartos o piezas dispone este hogar?**
 ```{r}
 tapply(hijosxsdh$n, hijosxsdh$P5000, summary)
-ggplot(hijosxsdh, aes(x = n, y = P5000)) + geom_point()
+ggplot(hijosxsdh, aes(x = P5000, y = n)) + geom_point()
 ```
 ```{r}
 cor(hijosxsdh$n, hijosxsdh$P5000)
@@ -241,10 +248,11 @@ ggplot(hijosxsdhna, aes(x = factor(P3000), y = n)) + geom_boxplot(outlier.colour
 Corresponde a la pregunta: **¿De cuántos servicios sanitarios o inodoros dispone este hogar? **
 ```{r}
 tapply(hijosxsdh$n, hijosxsdh$P5024, summary)
-ggplot(hijosxsdh, aes(x = n, y = P5024)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))  + scale_y_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = P5024, y = n)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))  + scale_y_continuous(breaks = seq(0,13,1))
 ```
 ```{r}
-cor(hijosxsdh$n, hijosxsdh$P5024)
+with(hijosxsdh[!is.na(hijosxsdh$P5024),],cor(n, P5024))
+
 ```
 
 
@@ -266,17 +274,17 @@ Con qué frecuencia preparan alimentos en este hogar?
 Veces al día
 ```{r}
 summary(hijosxsdh$P5013S1)
-ggplot(hijosxsdh, aes(x = n, y = P5013S1)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = P5013S1, y = n)) + geom_point() 
 ```
 ```{r}
-cor(hijosxsdh$n, hijosxsdh$P5013S1)
+with(hijosxsdh[!is.na(hijosxsdh$P5013S1),],cor(n, P5013S1))
 ```
 
 ## I_HOGAR	
 Corresponde a la pregunta: **Ingreso mensual total del hogar**
 ```{r}
 summary(hijosxsdh$I_HOGAR)
-ggplot(hijosxsdh, aes(x = n, y = I_HOGAR)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = I_HOGAR, y = n)) + geom_point() 
 ```
 ```{r}
 cor(hijosxsdh$n, hijosxsdh$I_HOGAR)
@@ -286,7 +294,7 @@ cor(hijosxsdh$n, hijosxsdh$I_HOGAR)
 Corresponde a la pregunta: **Ingreso mensual total de la unidad de gasto**
 ```{r}
 summary(hijosxsdh$I_UGASTO)
-ggplot(hijosxsdh, aes(x = n, y = I_UGASTO)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = I_UGASTO, y = n)) + geom_point() 
 ```
 ```{r}
 cor(hijosxsdh$n, hijosxsdh$I_UGASTO)
@@ -296,7 +304,7 @@ cor(hijosxsdh$n, hijosxsdh$I_UGASTO)
 Corresponde a la pregunta: **Ingreso per-cápita**
 ```{r}
 summary(hijosxsdh$PERCAPITA)
-ggplot(hijosxsdh, aes(x = n, y = PERCAPITA)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = PERCAPITA, y = n)) + geom_point() 
 ```
 ```{r}
 cor(hijosxsdh$n, hijosxsdh$PERCAPITA)
@@ -308,7 +316,7 @@ no creo
 Corresponde a la pregunta: **Ingreso mensual total de la otra unidad de gasto**
 ```{r}
 summary(hijosxsdh$I_OU)
-ggplot(hijosxsdh, aes(x = n, y = I_OU)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = I_OU, y = n)) + geom_point() 
 ```
 ```{r}
 cor(hijosxsdh$n, hijosxsdh$I_OU)
@@ -321,7 +329,7 @@ ggplot(hijosxsdhna, aes(x = factor(n), y = I_OU)) + geom_boxplot(outlier.colour 
 Corresponde a la pregunta: **Cantidad de personas en el hogar**
 ```{r}
 tapply(hijosxsdh$n, hijosxsdh$CANT_PERSONAS_HOGAR, summary)
-ggplot(hijosxsdh, aes(x = n , y = CANT_PERSONAS_HOGAR)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
+ggplot(hijosxsdh, aes(x = CANT_PERSONAS_HOGAR , y = n)) + geom_point() + scale_x_continuous(breaks = seq(0,13,1))
 ```
 ```{r}
 cor(hijosxsdh$n, hijosxsdh$CANT_PERSONAS_HOGAR)
@@ -331,20 +339,20 @@ ggplot(hijosxsdhna, aes(x = factor(n), y = CANT_PERSONAS_HOGAR)) + geom_boxplot(
 ```
 
 ```{r}
-plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$I_OU)
-plot(hijosxsdh$n,hijosxsdh$I_OU)
-plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$PERCAPITA)
-plot(hijosxsdh$n,hijosxsdh$PERCAPITA)
-plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$I_UGASTO)
-plot(hijosxsdh$n,hijosxsdh$I_UGASTO)
-plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$I_HOGAR)
-plot(hijosxsdh$n,hijosxsdh$I_HOGAR)
+plot(hijosxsdh[hijosxsdh$n==13,]$I_OU,hijosxsdh[hijosxsdh$n==13,]$n)
+plot(hijosxsdh$I_OU,hijosxsdh$n)
+plot(hijosxsdh[hijosxsdh$n==13,]$PERCAPITA,hijosxsdh[hijosxsdh$n==13,]$n)
+plot(hijosxsdh$PERCAPITA,hijosxsdh$n)
+plot(hijosxsdh[hijosxsdh$n==13,]$I_UGASTO,hijosxsdh[hijosxsdh$n==13,]$n)
+plot(hijosxsdh$I_UGASTO,hijosxsdh$n)
+plot(hijosxsdh[hijosxsdh$n==13,]$I_HOGAR,hijosxsdh[hijosxsdh$n==13,]$n)
+plot(hijosxsdh$I_HOGAR,hijosxsdh$n)
 #P5013S1 Cantidad de comidas
-plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$P5013S1)
-plot(hijosxsdh$n,hijosxsdh$P5013S1)
+plot(hijosxsdh[hijosxsdh$n==13,]$P5013S1,hijosxsdh[hijosxsdh$n==13,]$n)
+plot(hijosxsdh$P5013S1,hijosxsdh$n)
 ## P5000 cuartos
-plot(hijosxsdh[hijosxsdh$n==13,]$n,hijosxsdh[hijosxsdh$n==13,]$P5000)
-plot(hijosxsdh$n,hijosxsdh$P5000)
+plot(hijosxsdh[hijosxsdh$n==13,]$P5000,hijosxsdh[hijosxsdh$n==13,]$n)
+plot(hijosxsdh$P5000,hijosxsdh$n)
 ```
 
 merge(y, z, all = TRUE)
