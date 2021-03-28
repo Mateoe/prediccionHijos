@@ -98,12 +98,31 @@ BASE_FINAL %>%
   relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
 ```
 
+# Filtro de variables
+
+Se filtra para tener únicamente las variables pre analizadas y elegidas
+
+```{r}
+variables_definitivas <- c('DIRECTORIO','Hijos','P8587','P8586','P6435',
+                           'P5000','P5024','P5502','P5013S1','I_HOGAR','PERCAPITA',
+                           'I_OU','CANT_PERSONAS_HOGAR','P8634','P6218',
+                           'P1070','P6020')
+BASE_FINAL %>% 
+  select(variables_definitivas) -> BASE_FILTRADA 
+```
+
 
 # Creación del archivo - BASE_FINAL.csv
 
 ```{r}
 write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
 ```
+
+
+```{r}
+write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
+```
+
 
 
 

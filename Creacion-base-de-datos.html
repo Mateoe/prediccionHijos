@@ -442,9 +442,24 @@ hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] &lt;- 0</code></pre>
 BASE_FINAL %&gt;% 
   relocate(Hijos, .after = &#39;DIRECTORIO&#39;) -&gt; BASE_FINAL</code></pre>
 </div>
+<div id="filtro-de-variables" class="section level1">
+<h1>Filtro de variables</h1>
+<p>Se filtra para tener únicamente las variables pre analizadas y elegidas</p>
+<pre class="r"><code>variables_definitivas &lt;- c(&#39;DIRECTORIO&#39;,&#39;Hijos&#39;,&#39;P8587&#39;,&#39;P8586&#39;,&#39;P6435&#39;,
+                           &#39;P5000&#39;,&#39;P5024&#39;,&#39;P5502&#39;,&#39;P5013S1&#39;,&#39;I_HOGAR&#39;,&#39;PERCAPITA&#39;,
+                           &#39;I_OU&#39;,&#39;CANT_PERSONAS_HOGAR&#39;,&#39;P8634&#39;,&#39;P6218&#39;,
+                           &#39;P1070&#39;,&#39;P6020&#39;)
+BASE_FINAL %&gt;% 
+  select(variables_definitivas) -&gt; BASE_FILTRADA </code></pre>
+<pre><code>## Note: Using an external vector in selections is ambiguous.
+## i Use `all_of(variables_definitivas)` instead of `variables_definitivas` to silence this message.
+## i See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
+## This message is displayed once per session.</code></pre>
+</div>
 <div id="creación-del-archivo---base_final.csv" class="section level1">
 <h1>Creación del archivo - BASE_FINAL.csv</h1>
 <pre class="r"><code>write.csv(BASE_FINAL, file = &#39;BASE_FINAL.csv&#39;)</code></pre>
+<pre class="r"><code>write.csv(BASE_FILTRADA, file = &#39;BASE_FILTRADA.csv&#39;)</code></pre>
 </div>
 
 
