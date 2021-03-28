@@ -91,10 +91,10 @@ head(hijos_hogar)
 Asignación de hijos a cada jefe de hogar
 ```{r}
 #Se filtra el parentezco dejando solo a los jefes de hogar
-jefe_hogar <- compo_hogar %>% filter(P6051 == 1)
+jefe_hogar <- compo_hogar %>% filter(P6051 == 1 & SECUENCIA_P ==1)
 
 #Se asocian los hijos a cada jefe de hogar
-hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "Directorio", all = TRUE)
+hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "Directorio", all.x = TRUE)
 
 #A los jefe de hogar sin hijos se les establecen cero hijos
 hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
@@ -139,6 +139,12 @@ ggplot(hijos_jefe, aes(x = as.factor(P6080), y = Hijos)) +
     geom_point(mean_P6080, mapping = aes(x = as.factor(P6080), y = Hijos),
                col = "Red")
 ```
+
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P6080)), aes(x = as.factor(P6080))) +
+    geom_bar()
+```
+
 
 **Nota:** Dado que la variable establece que a la pregunta *"Se toma información directamente a cada una de las personas del hogar de 18 años o más y de las personas entre 12 y 17 años que trabajen o sean estudiantes universitarios. La información de los menores de 12 años y de los jóvenes entre 12 y 17 años que no trabajen ni estudien en la universidad será suministrada por el padre, la madre o la persona del hogar que está a cargo de su cuidado, excluyendo el servicio doméstico."*, Se considera que esta variable puede ser principalmente util para establecer la étnia del jefe de familia.
 
@@ -190,12 +196,18 @@ ggplot(subset(hijos_jefe, !is.na(P6087)), aes(x = as.factor(P6087), y = Hijos)) 
                col = "Red")
 ```
 
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P6087)), aes(x = as.factor(P6087))) +
+    geom_bar()
+```
+
+
 **Nota**: En este caso se hace referencia a los padres del jefe de familia, dado que la variable contempla que *"Se busca establecer el nivel más alto de estudios que alcanzó el padre de la persona entrevistada, cuando este no vive en el hogar o es fallecido"* y *"Lo deben responder todas las personas del hogar. Se toma información directamente a cada una de las personas del hogar de 18 años o más y de las personas entre 12 y 17 años que trabajen o sean estudiantes universitarios"*, de lo anterior se infiere que la población de hijos del jefe de hojar comunmente no responde a esta pregunta. Por lo cual se concluye que esta variable puede ser utilizada principalmente para conocer los antecedentes familiares del jefe de familia, en este caso el nivel educativo de los padres del mismo.
 
 ### Conclusión
 La conclusión para esta variable es similar a la anterior, inicialmente del gráfico se nota que el nivel educativo del padres del jefe de familia no tiene gran incidencia en el número de hijos, pero dado que se presentan  algunas variaciones entre algunas cajas, se considera dejarla dado que podría jugar un papel importante si se evalúa en conjunto con otras variables.
 
-## 2.3. variable P6020
+## 2.3. variable **P6020**
 Los ecuestados responden a la siguente pregunta: **Sexo**
 
 1. Hombre
@@ -228,11 +240,17 @@ ggplot(subset(hijos_jefe, !is.na(P6020)), aes(x = as.factor(P6020), y = Hijos)) 
                col = "Red")
 ```
 
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P6020)), aes(x = as.factor(P6020))) +
+    geom_bar()
+```
+
+
 ### Conclusión:
 En este caso las cajas del gráfico no presentan ningun tipo de diferencia significativa, por lo cual se cuestiona la relevancia de esta varaible, ya que si bien aqui no se presenta evidencia de dependencia, en juego con otras variables podría ser relevante.
 
 
-## 2.4. variable P415
+## 2.4. variable *P415*
 Los ecuestados responden a la siguente pregunta: **¿cuántas horas a la semana trabaja normalmente ____ en ese trabajo ?**
 
 Obtención de los datos de fuerza de trabajo
@@ -357,6 +375,17 @@ ggplot(hijos_jefe, aes(x = as.factor(P8520S3), y = Hijos)) +
   
 ```
 
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P8520S3)), aes(x = as.factor(P8520S3))) +
+    geom_bar()
+```
+
+
+```{r}
+
+```
+
+
 ### Conclusión:
 Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que la tenencia de alcantarillado en el hogar no tiene relación con el número de hijos por hogar.
 
@@ -408,6 +437,12 @@ ggplot(subset(hijos_jefe, !is.na(P1899)), aes(x = as.factor(P1899), y = Hijos)) 
   
   
 ```
+
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P1899)), aes(x = as.factor(P1899))) +
+    geom_bar()
+```
+
 
 ### Conclusión:
 Dado que no se aprecian diferencias significaivas en las cajas del gráfico anterior, se considera que el tipo de vivienda no tiene relación con el número de hijos por hogar.
@@ -471,6 +506,20 @@ ggplot(subset(hijos_jefe, !is.null(P5095)), aes(x = as.factor(P5095), y = Hijos)
     theme(plot.title = element_text(hjust = 0.5)) +
     geom_point(mean_P5095, mapping = aes(x = as.factor(P5095), y = Hijos),
                col = "Red")
+```
+
+```{r}
+ggplot(subset(hijos_jefe, !is.null(P5095)), aes(x = as.factor(P5095))) +
+    geom_bar()
+```
+```{r}
+hijos_jefe[hijos_jefe$Directorio == 7121808,]
+```
+
+
+
+```{r}
+
 ```
 
 
