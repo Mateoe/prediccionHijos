@@ -30,6 +30,7 @@ compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv", sep=";", 
 datos_vivienda <- read.csv('Datos de la vivienda.csv', sep = ";", dec = ",")
 uso_energetico <- read.csv('Uso de energéticos del hogar.csv', sep=";", dec = ",")
 servi_hogar <- read.csv('Servicios del hogar.csv', sep = ";", dec = ",")
+salud <- read.csv('Salud.csv', sep = ';', dec = ",")
 ```
 
 **Renombrando los directorios:**
@@ -41,6 +42,7 @@ colnames(fuerza_trabajo)[1] <- "DIRECTORIO"
 colnames(datos_vivienda)[1] <- "DIRECTORIO"
 colnames(uso_energetico)[1] <- "DIRECTORIO"
 colnames(servi_hogar)[1] <- 'DIRECTORIO'
+colnames(salud)[1] <- 'DIRECTORIO'
 ```
 
 # Creación identificador único: clave
@@ -50,6 +52,7 @@ compo_hogar$clave <- paste0(compo_hogar$DIRECTORIO, compo_hogar$SECUENCIA_P)
 educacion$clave <- paste0(educacion$DIRECTORIO, educacion$SECUENCIA_P)
 fuerza_trabajo$clave <- paste0(fuerza_trabajo$DIRECTORIO, fuerza_trabajo$SECUENCIA_P)
 datos_vivienda$clave <- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENCIA_P)
+salud$clave <- paste0(salud$DIRECTORIO, salud$SECUENCIA_P)
 ```
 
 Intercambio de nombres para la base de datos servicios hogar
@@ -108,6 +111,8 @@ uso_energetico %>%
   filter(ORDEN==1) -> uso_energetico_filtrada; nrow(uso_energetico_filtrada)
 servi_hogar %>%
   filter(ORDEN==1) -> servi_hogar_filtrada; nrow(servi_hogar_filtrada)
+salud %>% 
+  filter(ORDEN==1) -> salud_filtrada; nrow(salud_filtrada)
 ```
 
 
@@ -117,7 +122,8 @@ servi_hogar %>%
 BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe, edu_filtrada, 
                                                       fuerza_trabajo_filtrada,
                                                       servi_hogar_filtrada,
-                                                      uso_energetico_filtrada))
+                                                      uso_energetico_filtrada,
+                                                      salud_filtrada))
 BASE_FINAL %>% 
   relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
 ```
@@ -136,7 +142,7 @@ Se filtra para tener únicamente las variables pre analizadas y elegidas
 variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435',
                            'P5000','P5024','P5502','P5013S1','I_HOGAR','PERCAPITA',
                            'I_OU','CANT_PERSONAS_HOGAR','P6218', 'P5018',
-                           'P1070','P6020', 'P6071','P6040')
+                           'P1070','P6020', 'P6071','P6040', 'P6127', "P6100")
 
 ```
 
@@ -165,13 +171,13 @@ colnames(edad_conyugue)[2] <- 'edad_conyugue'
 
 ```{r}
 BASE_FINAL %>% 
-  select(variables_definitivas) -> BASE_FILTRADA 
+  select(all_of(variables_definitivas)) -> BASE_FILTRADA 
 ```
 
 ```{r}
 colnames(BASE_FILTRADA)[2] <- 'clave' 
 BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = 'clave')
-BASE_FILTRADA[is.na(BASE_FILTRADA$edad_conyugue),] <- 0
+BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
 ```
 
 
@@ -199,6 +205,27 @@ test <- BASE_FILTRADA[-inTrain,]
 dim(train)
 dim(test)
 ```
+
+# Renombrando las variables en las bases de datos
+
+```{r}
+train <- train[,-c(1,2)]
+test <- test[,-c(1,2)]
+names(train)
+names(test)
+```
+
+```{r}
+nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios",
+             "estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR",
+             "razon_no_estudie","consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe",
+             "estado_salud","regimen_salud","edad_conyugue")
+length(nombres)
+colnames(train) <- nombres
+colnames(test) <- nombres
+```
+
+
 ```{r}
 write.csv(train, file = 'train.csv')
 write.csv(test, file = 'test.csv')

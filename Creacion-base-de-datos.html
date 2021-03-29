@@ -383,21 +383,24 @@ fuerza_trabajo &lt;- read.csv(&quot;Fuerza de trabajo.csv&quot;, sep = &quot;;&q
 compo_hogar &lt;- read.csv(&quot;Caracteristicas y composicion del hogar.csv&quot;, sep=&quot;;&quot;, dec=&quot;,&quot;)
 datos_vivienda &lt;- read.csv(&#39;Datos de la vivienda.csv&#39;, sep = &quot;;&quot;, dec = &quot;,&quot;)
 uso_energetico &lt;- read.csv(&#39;Uso de energéticos del hogar.csv&#39;, sep=&quot;;&quot;, dec = &quot;,&quot;)
-servi_hogar &lt;- read.csv(&#39;Servicios del hogar.csv&#39;, sep = &quot;;&quot;, dec = &quot;,&quot;)</code></pre>
+servi_hogar &lt;- read.csv(&#39;Servicios del hogar.csv&#39;, sep = &quot;;&quot;, dec = &quot;,&quot;)
+salud &lt;- read.csv(&#39;Salud.csv&#39;, sep = &#39;;&#39;, dec = &quot;,&quot;)</code></pre>
 <p><strong>Renombrando los directorios:</strong></p>
 <pre class="r"><code>colnames(compo_hogar)[1] &lt;- &quot;DIRECTORIO&quot;
 colnames(educacion)[1] &lt;- &quot;DIRECTORIO&quot;
 colnames(fuerza_trabajo)[1] &lt;- &quot;DIRECTORIO&quot;
 colnames(datos_vivienda)[1] &lt;- &quot;DIRECTORIO&quot;
 colnames(uso_energetico)[1] &lt;- &quot;DIRECTORIO&quot;
-colnames(servi_hogar)[1] &lt;- &#39;DIRECTORIO&#39;</code></pre>
+colnames(servi_hogar)[1] &lt;- &#39;DIRECTORIO&#39;
+colnames(salud)[1] &lt;- &#39;DIRECTORIO&#39;</code></pre>
 </div>
 <div id="creación-identificador-único-clave" class="section level1">
 <h1>Creación identificador único: clave</h1>
 <pre class="r"><code>compo_hogar$clave &lt;- paste0(compo_hogar$DIRECTORIO, compo_hogar$SECUENCIA_P)
 educacion$clave &lt;- paste0(educacion$DIRECTORIO, educacion$SECUENCIA_P)
 fuerza_trabajo$clave &lt;- paste0(fuerza_trabajo$DIRECTORIO, fuerza_trabajo$SECUENCIA_P)
-datos_vivienda$clave &lt;- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENCIA_P)</code></pre>
+datos_vivienda$clave &lt;- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENCIA_P)
+salud$clave &lt;- paste0(salud$DIRECTORIO, salud$SECUENCIA_P)</code></pre>
 <p>Intercambio de nombres para la base de datos servicios hogar</p>
 <pre class="r"><code>colnames(servi_hogar)[3] &lt;- &#39;ORDEN&#39;
 colnames(servi_hogar)[4] &lt;- &#39;SECUENCIA_P&#39;
@@ -447,13 +450,17 @@ nrow(hijos_hogar)</code></pre>
 <pre class="r"><code>servi_hogar %&gt;%
   filter(ORDEN==1) -&gt; servi_hogar_filtrada; nrow(servi_hogar_filtrada)</code></pre>
 <pre><code>## [1] 93993</code></pre>
+<pre class="r"><code>salud %&gt;% 
+  filter(ORDEN==1) -&gt; salud_filtrada; nrow(salud_filtrada)</code></pre>
+<pre><code>## [1] 93993</code></pre>
 </div>
 <div id="union-de-todas-las-bases" class="section level1">
 <h1>Union de todas las bases</h1>
 <pre class="r"><code>BASE_FINAL &lt;- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe, edu_filtrada, 
                                                       fuerza_trabajo_filtrada,
                                                       servi_hogar_filtrada,
-                                                      uso_energetico_filtrada))
+                                                      uso_energetico_filtrada,
+                                                      salud_filtrada))
 BASE_FINAL %&gt;% 
   relocate(Hijos, .after = &#39;DIRECTORIO&#39;) -&gt; BASE_FINAL</code></pre>
 <pre class="r"><code>BASE_FINAL &lt;- merge(x = datos_vivienda, y = BASE_FINAL, by = &#39;DIRECTORIO&#39;, all.y = TRUE)</code></pre>
@@ -464,7 +471,7 @@ BASE_FINAL %&gt;%
 <pre class="r"><code>variables_definitivas &lt;- c(&#39;DIRECTORIO&#39;,&#39;clave.x&#39;,&#39;Hijos&#39;,&#39;P8587&#39;,&#39;P8586&#39;,&#39;P6435&#39;,
                            &#39;P5000&#39;,&#39;P5024&#39;,&#39;P5502&#39;,&#39;P5013S1&#39;,&#39;I_HOGAR&#39;,&#39;PERCAPITA&#39;,
                            &#39;I_OU&#39;,&#39;CANT_PERSONAS_HOGAR&#39;,&#39;P6218&#39;, &#39;P5018&#39;,
-                           &#39;P1070&#39;,&#39;P6020&#39;, &#39;P6071&#39;,&#39;P6040&#39;)</code></pre>
+                           &#39;P1070&#39;,&#39;P6020&#39;, &#39;P6071&#39;,&#39;P6040&#39;, &#39;P6127&#39;, &quot;P6100&quot;)</code></pre>
 <pre class="r"><code>compo_hogar %&gt;% 
   filter(P6051==2) %&gt;% 
   select(clave,P6040) -&gt; edad_conyugue 
@@ -477,14 +484,10 @@ colnames(edad_conyugue)[2] &lt;- &#39;edad_conyugue&#39;</code></pre>
   #select(clave,P8587) -&gt; edad_conyugue 
 #colnames(edad_conyugue)[2] &lt;- &#39;estudio_conyugue&#39;</code></pre>
 <pre class="r"><code>BASE_FINAL %&gt;% 
-  select(variables_definitivas) -&gt; BASE_FILTRADA </code></pre>
-<pre><code>## Note: Using an external vector in selections is ambiguous.
-## i Use `all_of(variables_definitivas)` instead of `variables_definitivas` to silence this message.
-## i See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
-## This message is displayed once per session.</code></pre>
+  select(all_of(variables_definitivas)) -&gt; BASE_FILTRADA </code></pre>
 <pre class="r"><code>colnames(BASE_FILTRADA)[2] &lt;- &#39;clave&#39; 
 BASE_FILTRADA &lt;- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = &#39;clave&#39;)
-BASE_FILTRADA[is.na(BASE_FILTRADA$edad_conyugue),] &lt;- 0</code></pre>
+BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] &lt;- 0</code></pre>
 </div>
 <div id="creación-del-archivo---base_final.csv" class="section level1">
 <h1>Creación del archivo - BASE_FINAL.csv</h1>
@@ -499,9 +502,38 @@ inTrain &lt;- createDataPartition(y=BASE_FILTRADA$Hijos, p=0.70, list = FALSE)
 train &lt;- BASE_FILTRADA[inTrain,]
 test &lt;- BASE_FILTRADA[-inTrain,]
 dim(train)</code></pre>
-<pre><code>## [1] 65796    21</code></pre>
+<pre><code>## [1] 65796    23</code></pre>
 <pre class="r"><code>dim(test)</code></pre>
-<pre><code>## [1] 28197    21</code></pre>
+<pre><code>## [1] 28197    23</code></pre>
+</div>
+<div id="renombrando-las-variables-en-las-bases-de-datos" class="section level1">
+<h1>Renombrando las variables en las bases de datos</h1>
+<pre class="r"><code>train &lt;- train[,-c(1,2)]
+test &lt;- test[,-c(1,2)]
+names(train)</code></pre>
+<pre><code>##  [1] &quot;Hijos&quot;               &quot;P8587&quot;               &quot;P8586&quot;              
+##  [4] &quot;P6435&quot;               &quot;P5000&quot;               &quot;P5024&quot;              
+##  [7] &quot;P5502&quot;               &quot;P5013S1&quot;             &quot;I_HOGAR&quot;            
+## [10] &quot;PERCAPITA&quot;           &quot;I_OU&quot;                &quot;CANT_PERSONAS_HOGAR&quot;
+## [13] &quot;P6218&quot;               &quot;P5018&quot;               &quot;P1070&quot;              
+## [16] &quot;P6020&quot;               &quot;P6071&quot;               &quot;P6040&quot;              
+## [19] &quot;P6127&quot;               &quot;P6100&quot;               &quot;edad_conyugue&quot;</code></pre>
+<pre class="r"><code>names(test)</code></pre>
+<pre><code>##  [1] &quot;Hijos&quot;               &quot;P8587&quot;               &quot;P8586&quot;              
+##  [4] &quot;P6435&quot;               &quot;P5000&quot;               &quot;P5024&quot;              
+##  [7] &quot;P5502&quot;               &quot;P5013S1&quot;             &quot;I_HOGAR&quot;            
+## [10] &quot;PERCAPITA&quot;           &quot;I_OU&quot;                &quot;CANT_PERSONAS_HOGAR&quot;
+## [13] &quot;P6218&quot;               &quot;P5018&quot;               &quot;P1070&quot;              
+## [16] &quot;P6020&quot;               &quot;P6071&quot;               &quot;P6040&quot;              
+## [19] &quot;P6127&quot;               &quot;P6100&quot;               &quot;edad_conyugue&quot;</code></pre>
+<pre class="r"><code>nombres &lt;- c(&quot;Hijos&quot;,&quot;nivel_edu&quot;,&quot;estu_actual&quot;,&quot;tipo_trabajo&quot;,&quot;num_cuartos&quot;,&quot;num_sanitarios&quot;,
+             &quot;estado_civil&quot;,&quot;comidas_dia&quot;,&quot;I_HOGAR&quot;,&quot;PERCAPITA&quot;,&quot;I_OU&quot;,&quot;CANT_PERSONAS_HOGAR&quot;,
+             &quot;razon_no_estudie&quot;,&quot;consumo_energia&quot;,&quot;tipo_vivienda&quot;,&quot;sexo&quot;,&quot;conyugue_hogar&quot;,&quot;edad_jefe&quot;,
+             &quot;estado_salud&quot;,&quot;regimen_salud&quot;,&quot;edad_conyugue&quot;)
+length(nombres)</code></pre>
+<pre><code>## [1] 21</code></pre>
+<pre class="r"><code>colnames(train) &lt;- nombres
+colnames(test) &lt;- nombres</code></pre>
 <pre class="r"><code>write.csv(train, file = &#39;train.csv&#39;)
 write.csv(test, file = &#39;test.csv&#39;)</code></pre>
 </div>
