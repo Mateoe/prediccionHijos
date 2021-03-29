@@ -30,6 +30,7 @@ compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv", sep=";", 
 datos_vivienda <- read.csv('Datos de la vivienda.csv', sep = ";", dec = ",")
 uso_energetico <- read.csv('Uso de energéticos del hogar.csv', sep=";", dec = ",")
 servi_hogar <- read.csv('Servicios del hogar.csv', sep = ";", dec = ",")
+salud <- read.csv('Salud.csv', sep = ';', dec = ",")
 ```
 
 **Renombrando los directorios:**
@@ -41,17 +42,40 @@ colnames(fuerza_trabajo)[1] <- "DIRECTORIO"
 colnames(datos_vivienda)[1] <- "DIRECTORIO"
 colnames(uso_energetico)[1] <- "DIRECTORIO"
 colnames(servi_hogar)[1] <- 'DIRECTORIO'
+colnames(salud)[1] <- 'DIRECTORIO'
 ```
+
+# Creación identificador único: clave
+
+```{r}
+compo_hogar$clave <- paste0(compo_hogar$DIRECTORIO, compo_hogar$SECUENCIA_P)
+educacion$clave <- paste0(educacion$DIRECTORIO, educacion$SECUENCIA_P)
+fuerza_trabajo$clave <- paste0(fuerza_trabajo$DIRECTORIO, fuerza_trabajo$SECUENCIA_P)
+datos_vivienda$clave <- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENCIA_P)
+salud$clave <- paste0(salud$DIRECTORIO, salud$SECUENCIA_P)
+```
+
+Intercambio de nombres para la base de datos servicios hogar
+
+```{r}
+colnames(servi_hogar)[3] <- 'ORDEN'
+colnames(servi_hogar)[4] <- 'SECUENCIA_P'
+colnames(uso_energetico)[3] <- 'ORDEN'
+colnames(uso_energetico)[4] <- 'SECUENCIA_P'
+servi_hogar$clave <- paste0(servi_hogar$DIRECTORIO, servi_hogar$SECUENCIA_P)
+uso_energetico$clave <- paste0(uso_energetico$DIRECTORIO, uso_energetico$SECUENCIA_P)
+```
+
+
 
 # Calculo del total de hijos para cada hogar
 
 ```{r}
 #Se seleccionan las columnas directorio y P6051
-directorio_P6051 <- compo_hogar %>% select(DIRECTORIO,P6051)
+clave_P6051 <- compo_hogar %>% select(clave,P6051)
 #Se cuentan el numero de hijos por hogar
-hijos_hogar <- directorio_P6051 %>% filter(P6051 == 3) %>% count(DIRECTORIO)
+hijos_hogar <- clave_P6051 %>% filter(P6051 == 3) %>% count(clave)
 colnames(hijos_hogar)[2] <- "Hijos"
-compo_hogar2 <- merge(x = compo_hogar, y = hijos_hogar, by = "DIRECTORIO")
 nrow(hijos_hogar)
 ```
 
@@ -59,13 +83,16 @@ nrow(hijos_hogar)
 
 ```{r}
 #Se filtra el parentezco dejando solo a los jefes de hogar
-jefe_hogar <- compo_hogar %>% filter(P6051 == 1 & SECUENCIA_P ==1)
+jefe_hogar <- compo_hogar %>% filter(P6051 == 1)
 
 #Se asocian los hijos a cada jefe de hogar
-hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "DIRECTORIO", all.x = TRUE)
+hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "clave", all.x = TRUE)
 
 #A los jefe de hogar sin hijos se les establecen cero hijos
 hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
+
+nrow(hijos_hogar)
+nrow(hijos_jefe)
 ```
 
 
@@ -75,41 +102,84 @@ Se reducirá cada base de datos inicial a sólo los registros que consideren
 
 ```{r}
 educacion %>% 
-  filter(ORDEN==1 & SECUENCIA_P ==1) -> edu_filtrada; nrow(edu_filtrada)
+  filter(ORDEN==1) -> edu_filtrada; nrow(edu_filtrada)
 fuerza_trabajo %>% 
-  filter(ORDEN==1 & SECUENCIA_P ==1) -> fuerza_trabajo_filtrada; nrow(fuerza_trabajo_filtrada)
+  filter(ORDEN==1) -> fuerza_trabajo_filtrada; nrow(fuerza_trabajo_filtrada)
 compo_hogar %>% 
-  filter(ORDEN==1 & SECUENCIA_P ==1) -> compo_hogar_filtrada; nrow (compo_hogar_filtrada)
-datos_vivienda %>% 
-  filter(ORDEN==1 & SECUENCIA_P ==1) -> datos_vivienda_filtrada; nrow(datos_vivienda_filtrada)
+  filter(ORDEN==1) -> compo_hogar_filtrada; nrow (compo_hogar_filtrada)
 uso_energetico %>% 
-  filter(ORDEN==1 & SECUENCIA_P ==1) -> uso_energetico_filtrada; nrow(uso_energetico_filtrada)
+  filter(ORDEN==1) -> uso_energetico_filtrada; nrow(uso_energetico_filtrada)
 servi_hogar %>%
-  filter(ORDEN==1 & SECUENCIA_P ==1) -> servi_hogar_filtrada; nrow(servi_hogar_filtrada)
+  filter(ORDEN==1) -> servi_hogar_filtrada; nrow(servi_hogar_filtrada)
+salud %>% 
+  filter(ORDEN==1) -> salud_filtrada; nrow(salud_filtrada)
 ```
+
+
 # Union de todas las bases 
 
 ```{r}
 BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe, edu_filtrada, 
                                                       fuerza_trabajo_filtrada,
-                                                      datos_vivienda_filtrada,
-                                                      servi_hogar_filtrada))
+                                                      servi_hogar_filtrada,
+                                                      uso_energetico_filtrada,
+                                                      salud_filtrada))
 BASE_FINAL %>% 
   relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
 ```
 
-# Filtro de variables
+
+```{r}
+BASE_FINAL <- merge(x = datos_vivienda, y = BASE_FINAL, by = 'DIRECTORIO', all.y = TRUE)
+```
+
+
+# Filtro de variables y adición de nuevas
 
 Se filtra para tener únicamente las variables pre analizadas y elegidas
 
 ```{r}
-variables_definitivas <- c('DIRECTORIO','Hijos','P8587','P8586','P6435',
+variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435',
                            'P5000','P5024','P5502','P5013S1','I_HOGAR','PERCAPITA',
-                           'I_OU','CANT_PERSONAS_HOGAR','P8634','P6218',
-                           'P1070','P6020')
-BASE_FINAL %>% 
-  select(variables_definitivas) -> BASE_FILTRADA 
+                           'I_OU','CANT_PERSONAS_HOGAR','P6218', 'P5018',
+                           'P1070','P6020', 'P6071','P6040', 'P6127', "P6100")
+
 ```
+
+
+```{r}
+compo_hogar %>% 
+  filter(P6051==2) %>% 
+  select(clave,P6040) -> edad_conyugue 
+colnames(edad_conyugue)[2] <- 'edad_conyugue'
+```
+
+
+```{r}
+#compo_hogar$clave_unica <- paste0(compo_hogar$clave, compo_hogar$ORDEN)
+#educacion$clave_unica <- paste0(educacion$clave, educacion$ORDEN)
+#edu_aux <- merge(x = compo_hogar[,c('P6051','clave_unica')], y = educacion[,c('clave_unica','P8587')], by = 'clave_unica', all.x = TRUE)
+```
+
+```{r}
+#educacion %>% 
+  #filter(ORDEN==2) %>% 
+  #select(clave,P8587) -> edad_conyugue 
+#colnames(edad_conyugue)[2] <- 'estudio_conyugue'
+```
+
+
+```{r}
+BASE_FINAL %>% 
+  select(all_of(variables_definitivas)) -> BASE_FILTRADA 
+```
+
+```{r}
+colnames(BASE_FILTRADA)[2] <- 'clave' 
+BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = 'clave')
+BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
+```
+
 
 
 # Creación del archivo - BASE_FINAL.csv
@@ -122,6 +192,45 @@ write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
 ```{r}
 write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
 ```
+
+
+# Particion entrenamiento y prueba
+
+```{r message=FALSE, warning=FALSE}
+set.seed(123)
+library(caret)
+inTrain <- createDataPartition(y=BASE_FILTRADA$Hijos, p=0.70, list = FALSE)
+train <- BASE_FILTRADA[inTrain,]
+test <- BASE_FILTRADA[-inTrain,]
+dim(train)
+dim(test)
+```
+
+# Renombrando las variables en las bases de datos
+
+```{r}
+train <- train[,-c(1,2)]
+test <- test[,-c(1,2)]
+names(train)
+names(test)
+```
+
+```{r}
+nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios",
+             "estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR",
+             "razon_no_estudie","consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe",
+             "estado_salud","regimen_salud","edad_conyugue")
+length(nombres)
+colnames(train) <- nombres
+colnames(test) <- nombres
+```
+
+
+```{r}
+write.csv(train, file = 'train.csv')
+write.csv(test, file = 'test.csv')
+```
+
 
 
 
