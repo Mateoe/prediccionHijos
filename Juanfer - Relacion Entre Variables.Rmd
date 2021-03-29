@@ -45,7 +45,6 @@ descargar_bd <- function (url_origen, ruta_destino, nombre_archivo) {
   #Se elimina el zip
   unlink(ruta_destino)
 }
-
 ```
 
 ```{r}
@@ -55,11 +54,15 @@ url_fuerza <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/1371
 url_educacion <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13710"
 url_vivienda <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13705"
 
+url_servicios <- "http://microdatos.dane.gov.co/index.php/catalog/678/download/13726"
+
 #Se crean las rutas de destino del archivo
 ruta_destino_caracteristicas <- "./Datos/Caracteristicas.zip"
 ruta_destino_fuerza <- "./Datos/Fuerza de trabajo.zip"
 ruta_destino_educacion <- "./Datos/Educacion.zip"
 ruta_destino_vivienda <- "./Datos/Vivienda.zip"
+
+ruta_destino_servicios <- "./Datos/Servicios.zip"
 
 #Se crea el nombre del archivo a extraer de cada zip
 nombre_caracteristicas <- "Caracteristicas y composicion del hogar.csv"
@@ -67,11 +70,15 @@ nombre_trabajo <- "Fuerza de trabajo.csv"
 nombre_educacion <- "Educaci¢n.csv"
 nombre_vivienda <- "Datos de la vivienda.csv"
 
+nombre_servicios <- "Servicios del hogar.csv"
+
 #Se descarga la base de datos usando la función creada previamente
 descargar_bd(url_Caracteristicas, ruta_destino_caracteristicas, nombre_caracteristicas)
 descargar_bd(url_fuerza, ruta_destino_fuerza, nombre_trabajo)
 descargar_bd(url_educacion, ruta_destino_educacion, nombre_educacion)
 descargar_bd(url_vivienda, ruta_destino_vivienda, nombre_vivienda)
+
+descargar_bd(url_servicios, ruta_destino_servicios, nombre_servicios)
 
 #Borrando variables que no se usan
 rm(url_Caracteristicas)
@@ -86,16 +93,28 @@ rm(ruta_destino_vivienda)
 ## Lectura de archivos csv
 ```{r}
 #Lectura de la composición del hogar
-csv_caracteristicas <- read.csv2(file = paste("./Datos/", nombre_caracteristicas, sep=""), sep = ";", dec = ",")
-csv_trabajo <- read.csv2(file = paste("./Datos/", nombre_trabajo, sep=""), sep = ";", dec = ",")
-csv_educacion <- read.csv2(file = paste("./Datos/", nombre_educacion, sep=""), sep = ";", dec = ",")
-csv_vivienda <- read.csv2(file = paste("./Datos/", nombre_vivienda, sep=""), sep = ";", dec = ",")
+csv_caracteristicas <- read.csv2(file = paste("./Datos/", nombre_caracteristicas, sep = ""), sep = ";", dec = ",")
+csv_trabajo <- read.csv2(file = paste("./Datos/", nombre_trabajo, sep = ""), sep = ";", dec = ",")
+csv_educacion <- read.csv2(file = paste("./Datos/", nombre_educacion, sep = ""), sep = ";", dec = ",")
+csv_vivienda <- read.csv2(file = paste("./Datos/", nombre_vivienda, sep = ""), sep = ";", dec = ",")
+csv_servicios <- read.csv2(file = paste("./Datos/", nombre_servicios, sep = ""), sep = ";", dec = ",")
+
+#csv_caracteristicas <- csv_caracteristicas %>% filter(ORDEN == 1 & SECUENCIA_P == 1)
+#csv_trabajo <- csv_trabajo %>% filter(ORDEN == 1 & SECUENCIA_P == 1)
+#csv_educacion <- csv_educacion %>% filter(ORDEN == 1 & SECUENCIA_P == 1)
+#csv_vivienda <- csv_vivienda %>% filter(ORDEN == 1 & SECUENCIA_P == 1)
+
+#csv_caracteristicas %>% filter(ORDEN == 1 & SECUENCIA_P == 1) -> csv_caracteristicas_aux
+#csv_trabajo %>% filter(ORDEN == 1 & SECUENCIA_P == 1) -> csv_trabajo
+#csv_educacion %>% filter(ORDEN == 1 & SECUENCIA_P == 1) -> csv_educacion
+#csv_vivienda %>% filter(ORDEN == 1 & SECUENCIA_P == 1) -> csv_vivienda
 ```
 
 Corrigiendo el nombre de la primera columna para todos los csv y observando el resultado
 ```{r}
 #Se cambia el nombre de la primera columna
 colnames(csv_caracteristicas)[1] <- "Directorio"
+colnames(csv_caracteristicas_aux)[1] <- "Directorio"
 colnames(csv_trabajo)[1] <- "Directorio"
 colnames(csv_educacion)[1] <- "Directorio"
 colnames(csv_vivienda)[1] <- "Directorio"
@@ -134,8 +153,8 @@ En este caso las variables asignadas son:
 
 ## Preprocesamiento
 Primero se encuentra el número de hijos por hogar usando la base de datos "Características y Composición del Hogar"
-```{r}
 
+```{r}
 #Se cuentan el numero de hijos por hogar
 hijos_hogar <- csv_caracteristicas %>% select(Directorio, P6051) %>% filter(P6051 == 3) %>% count(Directorio)
 
@@ -148,10 +167,10 @@ head(hijos_hogar)
 Ahora se asignan los hijos a cada jefe de hogar
 ```{r}
 #Se filtra el parentezco dejando solo a los jefes de hogar
-jefe_hogar <- csv_caracteristicas %>% filter(P6051 == 1)
+jefe_hogar <- csv_caracteristicas_aux %>% filter(P6051 == 1 & SECUENCIA_P == 1)
 
 #Se asocian los hijos a cada jefe de hogar
-hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "Directorio", all = TRUE)
+hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "Directorio", all.x = TRUE)
 
 #A los jefe de hogar sin hijos se les establecen cero hijos
 hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
