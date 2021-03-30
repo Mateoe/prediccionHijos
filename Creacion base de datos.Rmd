@@ -72,7 +72,8 @@ uso_energetico$clave <- paste0(uso_energetico$DIRECTORIO, uso_energetico$SECUENC
 
 ```{r}
 #Se seleccionan las columnas directorio y P6051
-clave_P6051 <- compo_hogar %>% select(clave,P6051)
+
+clave_P6051 <- compo_hogar %>% dplyr::select(clave, P6051)
 #Se cuentan el numero de hijos por hogar
 hijos_hogar <- clave_P6051 %>% filter(P6051 == 3) %>% count(clave)
 colnames(hijos_hogar)[2] <- "Hijos"
@@ -141,7 +142,7 @@ Se filtra para tener únicamente las variables pre analizadas y elegidas
 ```{r}
 variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435',
                            'P5000','P5024','P5502','P5013S1','I_HOGAR','PERCAPITA',
-                           'I_OU','CANT_PERSONAS_HOGAR','P6218', 'P5018',
+                           'I_OU','CANT_PERSONAS_HOGAR', 'P5018',
                            'P1070','P6020', 'P6071','P6040', 'P6127', "P6100")
 
 ```
@@ -150,28 +151,14 @@ variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435
 ```{r}
 compo_hogar %>% 
   filter(P6051==2) %>% 
-  select(clave,P6040) -> edad_conyugue 
+  dplyr::select(clave,P6040) -> edad_conyugue 
 colnames(edad_conyugue)[2] <- 'edad_conyugue'
 ```
 
 
 ```{r}
-#compo_hogar$clave_unica <- paste0(compo_hogar$clave, compo_hogar$ORDEN)
-#educacion$clave_unica <- paste0(educacion$clave, educacion$ORDEN)
-#edu_aux <- merge(x = compo_hogar[,c('P6051','clave_unica')], y = educacion[,c('clave_unica','P8587')], by = 'clave_unica', all.x = TRUE)
-```
-
-```{r}
-#educacion %>% 
-  #filter(ORDEN==2) %>% 
-  #select(clave,P8587) -> edad_conyugue 
-#colnames(edad_conyugue)[2] <- 'estudio_conyugue'
-```
-
-
-```{r}
 BASE_FINAL %>% 
-  select(all_of(variables_definitivas)) -> BASE_FILTRADA 
+  dplyr::select(all_of(variables_definitivas)) -> BASE_FILTRADA 
 ```
 
 ```{r}
@@ -193,6 +180,132 @@ write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
 write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
 ```
 
+**OJOOO: CORRER SOLO UNA VEZ, YO VERÉ**
+
+```{r}
+BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO))
+nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue")
+length(nombres)
+colnames(BASE_FILTRADA) <- nombres
+colnames(BASE_FILTRADA)
+```
+
+# Dealing with NA's
+
+A continuación se presenta la etapa de preprocesamiento para los NA's a portas de la partición en subconjuntos. 
+
+**Inputación a categorías no sabe/ no responde**
+
+```{r}
+#A conyugues sin edad, pongale la edad del jefe
+BASE_FILTRADA$edad_conyugue[BASE_FILTRADA$edad_conyugue==0] <- BASE_FILTRADA$edad_jefe[BASE_FILTRADA$edad_conyugue==0]
+# NA's en regimen salud cree la categoría 0
+BASE_FILTRADA$regimen_salud[is.na(BASE_FILTRADA$regimen_salud)] <- 9
+# NA's en si el conyugue vive en el hogar, cree la categoría 0
+BASE_FILTRADA$conyugue_hogar[is.na(BASE_FILTRADA$conyugue_hogar)] <- 0
+# NA's en tipo de trabajo
+BASE_FILTRADA$tipo_trabajo[is.na(BASE_FILTRADA$tipo_trabajo)] <- 0
+
+sum(is.na(BASE_FILTRADA$edad_conyugue))
+sum(is.na(BASE_FILTRADA$regimen_salud))
+sum(is.na(BASE_FILTRADA$conyugue_hogar))
+sum(is.na(BASE_FILTRADA$tipo_trabajo))
+```
+
+```{r message=FALSE, warning=FALSE}
+library(caret)
+```
+
+```{r}
+####### veamos ahora como llenar comidas dia
+summary(as.factor(BASE_FILTRADA$comidas_dia))
+mean(na.omit(BASE_FILTRADA$comidas_dia)) 
+nas_comidas <- which(is.na(BASE_FILTRADA$comidas_dia))
+set.seed(123)
+particion <- createDataPartition(nas_comidas, p=0.5, list = FALSE)
+nas_comidas1 <- nas_comidas[particion]
+nas_comidas2 <- nas_comidas[-particion]
+BASE_FILTRADA$comidas_dia[nas_comidas1] <- 3
+BASE_FILTRADA$comidas_dia[nas_comidas2] <- 2
+summary(as.factor(BASE_FILTRADA$comidas_dia)) #Lista la comida
+sum(is.na(BASE_FILTRADA$comidas_dia))
+```
+
+Anteriores 585
+
+```{r}
+sum(is.na(BASE_FILTRADA$I_HOGAR))
+sum(is.na(BASE_FILTRADA$num_cuartos))
+sum(is.na(BASE_FILTRADA$PERCAPITA))
+sum(is.na(BASE_FILTRADA$I_OU))
+sum(is.na(BASE_FILTRADA$CANT_PERSONAS_HOGAR))
+
+sum(is.na(BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos & 
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos &
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$PERCAPITA &
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$I_OU &
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$CANT_PERSONAS_HOGAR))
+nas_833 <- which(is.na(BASE_FILTRADA$I_HOGAR))
+BASE_FILTRADA <- BASE_FILTRADA[-nas_833,]
+sum(is.na(BASE_FILTRADA$I_HOGAR))
+```
+
+Para consumo de energía
+
+```{r}
+sum(is.na(BASE_FILTRADA$consumo_energia))
+summary(BASE_FILTRADA$consumo_energia)
+nas_energia <- which(is.na(BASE_FILTRADA$consumo_energia))
+median(na.omit(BASE_FILTRADA$consumo_energia))
+BASE_FILTRADA$consumo_energia[nas_energia] <- median(na.omit(BASE_FILTRADA$consumo_energia))
+sum(is.na(BASE_FILTRADA$consumo_energia))
+```
+
+Las "no tienen"
+
+```{r}
+# NA's estado civil no tiene
+sum(is.na(BASE_FILTRADA$estado_civil))
+# NA' tipo de vivienda
+sum(is.na(BASE_FILTRADA$tipo_vivienda))
+# NA'S sexo
+sum(is.na(BASE_FILTRADA$sexo))
+# NA'S conyugue hogar
+sum(is.na(BASE_FILTRADA$conyugue_hogar))
+# NA'S estado salud
+sum(is.na(BASE_FILTRADA$estado_salud))
+# NA'S regimen salud
+sum(is.na(BASE_FILTRADA$regimen_salud))
+```
+
+Número de sanitarios
+
+```{r}
+# NA'S num_sanitarios
+sum(is.na(BASE_FILTRADA$num_sanitarios))
+summary(as.factor(BASE_FILTRADA$num_sanitarios))
+
+BASE_FILTRADA$num_sanitarios[is.na(BASE_FILTRADA$num_sanitarios)] <- 1
+sum(is.na(BASE_FILTRADA$num_sanitarios))
+```
+
+Nivel educativo maximo
+
+```{r}
+#NA'S nivel_educativa
+sum(is.na(BASE_FILTRADA$nivel_edu))
+summary(as.factor(BASE_FILTRADA$nivel_edu))
+BASE_FILTRADA$nivel_edu[is.na(BASE_FILTRADA$nivel_edu)] <- 3 #moda
+sum(is.na(BASE_FILTRADA$nivel_edu))
+```
+
+```{r}
+summary(BASE_FILTRADA)
+```
+
+```{r}
+write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA(sin_nas).csv')
+```
 
 # Particion entrenamiento y prueba
 
@@ -209,20 +322,8 @@ dim(test)
 # Renombrando las variables en las bases de datos
 
 ```{r}
-train <- train[,-c(1,2)]
-test <- test[,-c(1,2)]
 names(train)
 names(test)
-```
-
-```{r}
-nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios",
-             "estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR",
-             "razon_no_estudie","consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe",
-             "estado_salud","regimen_salud","edad_conyugue")
-length(nombres)
-colnames(train) <- nombres
-colnames(test) <- nombres
 ```
 
 

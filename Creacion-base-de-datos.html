@@ -412,7 +412,8 @@ uso_energetico$clave &lt;- paste0(uso_energetico$DIRECTORIO, uso_energetico$SECU
 <div id="calculo-del-total-de-hijos-para-cada-hogar" class="section level1">
 <h1>Calculo del total de hijos para cada hogar</h1>
 <pre class="r"><code>#Se seleccionan las columnas directorio y P6051
-clave_P6051 &lt;- compo_hogar %&gt;% select(clave,P6051)
+
+clave_P6051 &lt;- compo_hogar %&gt;% dplyr::select(clave, P6051)
 #Se cuentan el numero de hijos por hogar
 hijos_hogar &lt;- clave_P6051 %&gt;% filter(P6051 == 3) %&gt;% count(clave)
 colnames(hijos_hogar)[2] &lt;- &quot;Hijos&quot;
@@ -470,21 +471,14 @@ BASE_FINAL %&gt;%
 <p>Se filtra para tener únicamente las variables pre analizadas y elegidas</p>
 <pre class="r"><code>variables_definitivas &lt;- c(&#39;DIRECTORIO&#39;,&#39;clave.x&#39;,&#39;Hijos&#39;,&#39;P8587&#39;,&#39;P8586&#39;,&#39;P6435&#39;,
                            &#39;P5000&#39;,&#39;P5024&#39;,&#39;P5502&#39;,&#39;P5013S1&#39;,&#39;I_HOGAR&#39;,&#39;PERCAPITA&#39;,
-                           &#39;I_OU&#39;,&#39;CANT_PERSONAS_HOGAR&#39;,&#39;P6218&#39;, &#39;P5018&#39;,
+                           &#39;I_OU&#39;,&#39;CANT_PERSONAS_HOGAR&#39;, &#39;P5018&#39;,
                            &#39;P1070&#39;,&#39;P6020&#39;, &#39;P6071&#39;,&#39;P6040&#39;, &#39;P6127&#39;, &quot;P6100&quot;)</code></pre>
 <pre class="r"><code>compo_hogar %&gt;% 
   filter(P6051==2) %&gt;% 
-  select(clave,P6040) -&gt; edad_conyugue 
+  dplyr::select(clave,P6040) -&gt; edad_conyugue 
 colnames(edad_conyugue)[2] &lt;- &#39;edad_conyugue&#39;</code></pre>
-<pre class="r"><code>#compo_hogar$clave_unica &lt;- paste0(compo_hogar$clave, compo_hogar$ORDEN)
-#educacion$clave_unica &lt;- paste0(educacion$clave, educacion$ORDEN)
-#edu_aux &lt;- merge(x = compo_hogar[,c(&#39;P6051&#39;,&#39;clave_unica&#39;)], y = educacion[,c(&#39;clave_unica&#39;,&#39;P8587&#39;)], by = &#39;clave_unica&#39;, all.x = TRUE)</code></pre>
-<pre class="r"><code>#educacion %&gt;% 
-  #filter(ORDEN==2) %&gt;% 
-  #select(clave,P8587) -&gt; edad_conyugue 
-#colnames(edad_conyugue)[2] &lt;- &#39;estudio_conyugue&#39;</code></pre>
 <pre class="r"><code>BASE_FINAL %&gt;% 
-  select(all_of(variables_definitivas)) -&gt; BASE_FILTRADA </code></pre>
+  dplyr::select(all_of(variables_definitivas)) -&gt; BASE_FILTRADA </code></pre>
 <pre class="r"><code>colnames(BASE_FILTRADA)[2] &lt;- &#39;clave&#39; 
 BASE_FILTRADA &lt;- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = &#39;clave&#39;)
 BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] &lt;- 0</code></pre>
@@ -493,6 +487,172 @@ BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] &lt;- 0</code></
 <h1>Creación del archivo - BASE_FINAL.csv</h1>
 <pre class="r"><code>write.csv(BASE_FINAL, file = &#39;BASE_FINAL.csv&#39;)</code></pre>
 <pre class="r"><code>write.csv(BASE_FILTRADA, file = &#39;BASE_FILTRADA.csv&#39;)</code></pre>
+<p><strong>OJOOO: CORRER SOLO UNA VEZ, YO VERÉ</strong></p>
+<pre class="r"><code>BASE_FILTRADA &lt;- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO))
+nombres &lt;- c(&quot;Hijos&quot;,&quot;nivel_edu&quot;,&quot;estu_actual&quot;,&quot;tipo_trabajo&quot;,&quot;num_cuartos&quot;,&quot;num_sanitarios&quot;,&quot;estado_civil&quot;,&quot;comidas_dia&quot;,&quot;I_HOGAR&quot;,&quot;PERCAPITA&quot;,&quot;I_OU&quot;,&quot;CANT_PERSONAS_HOGAR&quot;, &quot;consumo_energia&quot;,&quot;tipo_vivienda&quot;,&quot;sexo&quot;,&quot;conyugue_hogar&quot;,&quot;edad_jefe&quot;,&quot;estado_salud&quot;,&quot;regimen_salud&quot;,&quot;edad_conyugue&quot;)
+length(nombres)</code></pre>
+<pre><code>## [1] 20</code></pre>
+<pre class="r"><code>colnames(BASE_FILTRADA) &lt;- nombres
+colnames(BASE_FILTRADA)</code></pre>
+<pre><code>##  [1] &quot;Hijos&quot;               &quot;nivel_edu&quot;           &quot;estu_actual&quot;        
+##  [4] &quot;tipo_trabajo&quot;        &quot;num_cuartos&quot;         &quot;num_sanitarios&quot;     
+##  [7] &quot;estado_civil&quot;        &quot;comidas_dia&quot;         &quot;I_HOGAR&quot;            
+## [10] &quot;PERCAPITA&quot;           &quot;I_OU&quot;                &quot;CANT_PERSONAS_HOGAR&quot;
+## [13] &quot;consumo_energia&quot;     &quot;tipo_vivienda&quot;       &quot;sexo&quot;               
+## [16] &quot;conyugue_hogar&quot;      &quot;edad_jefe&quot;           &quot;estado_salud&quot;       
+## [19] &quot;regimen_salud&quot;       &quot;edad_conyugue&quot;</code></pre>
+</div>
+<div id="dealing-with-nas" class="section level1">
+<h1>Dealing with NA’s</h1>
+<p>A continuación se presenta la etapa de preprocesamiento para los NA’s a portas de la partición en subconjuntos.</p>
+<p><strong>Inputación a categorías no sabe/ no responde</strong></p>
+<pre class="r"><code>#A conyugues sin edad, pongale la edad del jefe
+BASE_FILTRADA$edad_conyugue[BASE_FILTRADA$edad_conyugue==0] &lt;- BASE_FILTRADA$edad_jefe[BASE_FILTRADA$edad_conyugue==0]
+# NA&#39;s en regimen salud cree la categoría 0
+BASE_FILTRADA$regimen_salud[is.na(BASE_FILTRADA$regimen_salud)] &lt;- 9
+# NA&#39;s en si el conyugue vive en el hogar, cree la categoría 0
+BASE_FILTRADA$conyugue_hogar[is.na(BASE_FILTRADA$conyugue_hogar)] &lt;- 0
+# NA&#39;s en tipo de trabajo
+BASE_FILTRADA$tipo_trabajo[is.na(BASE_FILTRADA$tipo_trabajo)] &lt;- 0
+
+sum(is.na(BASE_FILTRADA$edad_conyugue))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$regimen_salud))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$conyugue_hogar))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$tipo_trabajo))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre class="r"><code>####### veamos ahora como llenar comidas dia
+summary(as.factor(BASE_FILTRADA$comidas_dia))</code></pre>
+<pre><code>##     1     2     3     4     5     6     7     8     9    12    13    14    20 
+##  7737 30164 50561   604   149    43   386     3     1     2     1     2     2 
+##  NA&#39;s 
+##  4338</code></pre>
+<pre class="r"><code>mean(na.omit(BASE_FILTRADA$comidas_dia)) </code></pre>
+<pre><code>## [1] 2.520852</code></pre>
+<pre class="r"><code>nas_comidas &lt;- which(is.na(BASE_FILTRADA$comidas_dia))
+set.seed(123)
+particion &lt;- createDataPartition(nas_comidas, p=0.5, list = FALSE)
+nas_comidas1 &lt;- nas_comidas[particion]
+nas_comidas2 &lt;- nas_comidas[-particion]
+BASE_FILTRADA$comidas_dia[nas_comidas1] &lt;- 3
+BASE_FILTRADA$comidas_dia[nas_comidas2] &lt;- 2
+summary(as.factor(BASE_FILTRADA$comidas_dia)) #Lista la comida</code></pre>
+<pre><code>##     1     2     3     4     5     6     7     8     9    12    13    14    20 
+##  7737 32332 52731   604   149    43   386     3     1     2     1     2     2</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$comidas_dia))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Anteriores 585</p>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$I_HOGAR))</code></pre>
+<pre><code>## [1] 833</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$num_cuartos))</code></pre>
+<pre><code>## [1] 833</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$PERCAPITA))</code></pre>
+<pre><code>## [1] 833</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$I_OU))</code></pre>
+<pre><code>## [1] 833</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$CANT_PERSONAS_HOGAR))</code></pre>
+<pre><code>## [1] 833</code></pre>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos &amp; 
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos &amp;
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$PERCAPITA &amp;
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$I_OU &amp;
+            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$CANT_PERSONAS_HOGAR))</code></pre>
+<pre><code>## [1] 833</code></pre>
+<pre class="r"><code>nas_833 &lt;- which(is.na(BASE_FILTRADA$I_HOGAR))
+BASE_FILTRADA &lt;- BASE_FILTRADA[-nas_833,]
+sum(is.na(BASE_FILTRADA$I_HOGAR))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Para consumo de energía</p>
+<pre class="r"><code>sum(is.na(BASE_FILTRADA$consumo_energia))</code></pre>
+<pre><code>## [1] 5187</code></pre>
+<pre class="r"><code>summary(BASE_FILTRADA$consumo_energia)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##       0   15000   30000   47114   58000 1000000    5187</code></pre>
+<pre class="r"><code>nas_energia &lt;- which(is.na(BASE_FILTRADA$consumo_energia))
+median(na.omit(BASE_FILTRADA$consumo_energia))</code></pre>
+<pre><code>## [1] 30000</code></pre>
+<pre class="r"><code>BASE_FILTRADA$consumo_energia[nas_energia] &lt;- median(na.omit(BASE_FILTRADA$consumo_energia))
+sum(is.na(BASE_FILTRADA$consumo_energia))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Las “no tienen”</p>
+<pre class="r"><code># NA&#39;s estado civil no tiene
+sum(is.na(BASE_FILTRADA$estado_civil))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code># NA&#39; tipo de vivienda
+sum(is.na(BASE_FILTRADA$tipo_vivienda))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code># NA&#39;S sexo
+sum(is.na(BASE_FILTRADA$sexo))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code># NA&#39;S conyugue hogar
+sum(is.na(BASE_FILTRADA$conyugue_hogar))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code># NA&#39;S estado salud
+sum(is.na(BASE_FILTRADA$estado_salud))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code># NA&#39;S regimen salud
+sum(is.na(BASE_FILTRADA$regimen_salud))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Número de sanitarios</p>
+<pre class="r"><code># NA&#39;S num_sanitarios
+sum(is.na(BASE_FILTRADA$num_sanitarios))</code></pre>
+<pre><code>## [1] 7905</code></pre>
+<pre class="r"><code>summary(as.factor(BASE_FILTRADA$num_sanitarios))</code></pre>
+<pre><code>##     1     2     3     4     5     6     7     8     9    10    11    12  NA&#39;s 
+## 72075  9870  2314   666   236    56    17    16     2     1     1     1  7905</code></pre>
+<pre class="r"><code>BASE_FILTRADA$num_sanitarios[is.na(BASE_FILTRADA$num_sanitarios)] &lt;- 1
+sum(is.na(BASE_FILTRADA$num_sanitarios))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Nivel educativo maximo</p>
+<pre class="r"><code>#NA&#39;S nivel_educativa
+sum(is.na(BASE_FILTRADA$nivel_edu))</code></pre>
+<pre><code>## [1] 2313</code></pre>
+<pre class="r"><code>summary(as.factor(BASE_FILTRADA$nivel_edu))</code></pre>
+<pre><code>##     1     3     4     5     6     7     8     9    10    11    12    13  NA&#39;s 
+##  8570 36558 12203 18589   292  4668   132  1738   766  5496    60  1775  2313</code></pre>
+<pre class="r"><code>BASE_FILTRADA$nivel_edu[is.na(BASE_FILTRADA$nivel_edu)] &lt;- 3 #moda
+sum(is.na(BASE_FILTRADA$nivel_edu))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>summary(BASE_FILTRADA)</code></pre>
+<pre><code>##      Hijos          nivel_edu       estu_actual     tipo_trabajo   
+##  Min.   : 0.000   Min.   : 1.000   Min.   :1.000   Min.   : 0.000  
+##  1st Qu.: 0.000   1st Qu.: 3.000   1st Qu.:2.000   1st Qu.: 0.000  
+##  Median : 1.000   Median : 3.000   Median :2.000   Median : 2.000  
+##  Mean   : 1.118   Mean   : 4.401   Mean   :1.975   Mean   : 3.123  
+##  3rd Qu.: 2.000   3rd Qu.: 5.000   3rd Qu.:2.000   3rd Qu.: 5.000  
+##  Max.   :11.000   Max.   :13.000   Max.   :2.000   Max.   :10.000  
+##   num_cuartos     num_sanitarios    estado_civil    comidas_dia   
+##  Min.   : 1.000   Min.   : 1.000   Min.   :1.000   Min.   : 1.00  
+##  1st Qu.: 2.000   1st Qu.: 1.000   1st Qu.:2.000   1st Qu.: 2.00  
+##  Median : 3.000   Median : 1.000   Median :4.000   Median : 3.00  
+##  Mean   : 3.093   Mean   : 1.193   Mean   :3.718   Mean   : 2.52  
+##  3rd Qu.: 4.000   3rd Qu.: 1.000   3rd Qu.:5.000   3rd Qu.: 3.00  
+##  Max.   :16.000   Max.   :12.000   Max.   :6.000   Max.   :20.00  
+##     I_HOGAR            PERCAPITA              I_OU         CANT_PERSONAS_HOGAR
+##  Min.   :        0   Min.   :        0   Min.   :      0   Min.   : 1.000     
+##  1st Qu.:   530000   1st Qu.:   193000   1st Qu.:      0   1st Qu.: 2.000     
+##  Median :  1020741   Median :   366667   Median :      0   Median : 3.000     
+##  Mean   :  1734180   Mean   :   711110   Mean   :   5640   Mean   : 3.084     
+##  3rd Qu.:  1881667   3rd Qu.:   725000   3rd Qu.:      0   3rd Qu.: 4.000     
+##  Max.   :284600000   Max.   :120000000   Max.   :6740000   Max.   :19.000     
+##  consumo_energia   tipo_vivienda        sexo       conyugue_hogar  
+##  Min.   :      0   Min.   :1.000   Min.   :1.000   Min.   :0.0000  
+##  1st Qu.:  15000   1st Qu.:1.000   1st Qu.:1.000   1st Qu.:0.0000  
+##  Median :  30000   Median :1.000   Median :1.000   Median :1.0000  
+##  Mean   :  46161   Mean   :1.308   Mean   :1.362   Mean   :0.6652  
+##  3rd Qu.:  55000   3rd Qu.:1.000   3rd Qu.:2.000   3rd Qu.:1.0000  
+##  Max.   :1000000   Max.   :5.000   Max.   :2.000   Max.   :2.0000  
+##    edad_jefe       estado_salud   regimen_salud   edad_conyugue   
+##  Min.   : 13.00   Min.   :1.000   Min.   :1.000   Min.   : 12.00  
+##  1st Qu.: 36.00   1st Qu.:2.000   1st Qu.:1.000   1st Qu.: 34.00  
+##  Median : 48.00   Median :2.000   Median :3.000   Median : 46.00  
+##  Mean   : 48.96   Mean   :2.187   Mean   :2.747   Mean   : 47.02  
+##  3rd Qu.: 61.00   3rd Qu.:2.000   3rd Qu.:3.000   3rd Qu.: 59.00  
+##  Max.   :106.00   Max.   :4.000   Max.   :9.000   Max.   :107.00</code></pre>
+<pre class="r"><code>write.csv(BASE_FILTRADA, file = &#39;BASE_FILTRADA(sin_nas).csv&#39;)</code></pre>
 </div>
 <div id="particion-entrenamiento-y-prueba" class="section level1">
 <h1>Particion entrenamiento y prueba</h1>
@@ -502,38 +662,28 @@ inTrain &lt;- createDataPartition(y=BASE_FILTRADA$Hijos, p=0.70, list = FALSE)
 train &lt;- BASE_FILTRADA[inTrain,]
 test &lt;- BASE_FILTRADA[-inTrain,]
 dim(train)</code></pre>
-<pre><code>## [1] 65796    23</code></pre>
+<pre><code>## [1] 65213    20</code></pre>
 <pre class="r"><code>dim(test)</code></pre>
-<pre><code>## [1] 28197    23</code></pre>
+<pre><code>## [1] 27947    20</code></pre>
 </div>
 <div id="renombrando-las-variables-en-las-bases-de-datos" class="section level1">
 <h1>Renombrando las variables en las bases de datos</h1>
-<pre class="r"><code>train &lt;- train[,-c(1,2)]
-test &lt;- test[,-c(1,2)]
-names(train)</code></pre>
-<pre><code>##  [1] &quot;Hijos&quot;               &quot;P8587&quot;               &quot;P8586&quot;              
-##  [4] &quot;P6435&quot;               &quot;P5000&quot;               &quot;P5024&quot;              
-##  [7] &quot;P5502&quot;               &quot;P5013S1&quot;             &quot;I_HOGAR&quot;            
+<pre class="r"><code>names(train)</code></pre>
+<pre><code>##  [1] &quot;Hijos&quot;               &quot;nivel_edu&quot;           &quot;estu_actual&quot;        
+##  [4] &quot;tipo_trabajo&quot;        &quot;num_cuartos&quot;         &quot;num_sanitarios&quot;     
+##  [7] &quot;estado_civil&quot;        &quot;comidas_dia&quot;         &quot;I_HOGAR&quot;            
 ## [10] &quot;PERCAPITA&quot;           &quot;I_OU&quot;                &quot;CANT_PERSONAS_HOGAR&quot;
-## [13] &quot;P6218&quot;               &quot;P5018&quot;               &quot;P1070&quot;              
-## [16] &quot;P6020&quot;               &quot;P6071&quot;               &quot;P6040&quot;              
-## [19] &quot;P6127&quot;               &quot;P6100&quot;               &quot;edad_conyugue&quot;</code></pre>
+## [13] &quot;consumo_energia&quot;     &quot;tipo_vivienda&quot;       &quot;sexo&quot;               
+## [16] &quot;conyugue_hogar&quot;      &quot;edad_jefe&quot;           &quot;estado_salud&quot;       
+## [19] &quot;regimen_salud&quot;       &quot;edad_conyugue&quot;</code></pre>
 <pre class="r"><code>names(test)</code></pre>
-<pre><code>##  [1] &quot;Hijos&quot;               &quot;P8587&quot;               &quot;P8586&quot;              
-##  [4] &quot;P6435&quot;               &quot;P5000&quot;               &quot;P5024&quot;              
-##  [7] &quot;P5502&quot;               &quot;P5013S1&quot;             &quot;I_HOGAR&quot;            
+<pre><code>##  [1] &quot;Hijos&quot;               &quot;nivel_edu&quot;           &quot;estu_actual&quot;        
+##  [4] &quot;tipo_trabajo&quot;        &quot;num_cuartos&quot;         &quot;num_sanitarios&quot;     
+##  [7] &quot;estado_civil&quot;        &quot;comidas_dia&quot;         &quot;I_HOGAR&quot;            
 ## [10] &quot;PERCAPITA&quot;           &quot;I_OU&quot;                &quot;CANT_PERSONAS_HOGAR&quot;
-## [13] &quot;P6218&quot;               &quot;P5018&quot;               &quot;P1070&quot;              
-## [16] &quot;P6020&quot;               &quot;P6071&quot;               &quot;P6040&quot;              
-## [19] &quot;P6127&quot;               &quot;P6100&quot;               &quot;edad_conyugue&quot;</code></pre>
-<pre class="r"><code>nombres &lt;- c(&quot;Hijos&quot;,&quot;nivel_edu&quot;,&quot;estu_actual&quot;,&quot;tipo_trabajo&quot;,&quot;num_cuartos&quot;,&quot;num_sanitarios&quot;,
-             &quot;estado_civil&quot;,&quot;comidas_dia&quot;,&quot;I_HOGAR&quot;,&quot;PERCAPITA&quot;,&quot;I_OU&quot;,&quot;CANT_PERSONAS_HOGAR&quot;,
-             &quot;razon_no_estudie&quot;,&quot;consumo_energia&quot;,&quot;tipo_vivienda&quot;,&quot;sexo&quot;,&quot;conyugue_hogar&quot;,&quot;edad_jefe&quot;,
-             &quot;estado_salud&quot;,&quot;regimen_salud&quot;,&quot;edad_conyugue&quot;)
-length(nombres)</code></pre>
-<pre><code>## [1] 21</code></pre>
-<pre class="r"><code>colnames(train) &lt;- nombres
-colnames(test) &lt;- nombres</code></pre>
+## [13] &quot;consumo_energia&quot;     &quot;tipo_vivienda&quot;       &quot;sexo&quot;               
+## [16] &quot;conyugue_hogar&quot;      &quot;edad_jefe&quot;           &quot;estado_salud&quot;       
+## [19] &quot;regimen_salud&quot;       &quot;edad_conyugue&quot;</code></pre>
 <pre class="r"><code>write.csv(train, file = &#39;train.csv&#39;)
 write.csv(test, file = &#39;test.csv&#39;)</code></pre>
 </div>
