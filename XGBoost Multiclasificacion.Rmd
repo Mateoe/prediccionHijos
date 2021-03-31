@@ -1,0 +1,151 @@
+---
+title: "XGBoost - Multiclasificacion"
+author: "Alejandro Bedoya Cataño"
+date: "30/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de paquetes
+
+```{r message=FALSE, warning=FALSE}
+library("xgboost")  
+library("caret")    
+library("dplyr")    
+library("e1071")
+library("Ckmeans.1d.dp")
+```
+
+
+
+# Lectura de las bases de datos
+
+```{r}
+setwd("C:/Users/123/Desktop/TAE/Actividades/TRABAJO 1")
+train <- read.csv("train.csv", header = TRUE)
+test <- read.csv("test.csv", header = TRUE)
+train <- train[,-c(1)]
+test <- test[,-c(1)]
+summary(train$Hijos) #El algoritmo precisa que se empiece en 0
+```
+
+
+# Creación de matrices xgb
+
+Primero la partición de respuesta y covariables para cada base en matrices y vectores.
+```{r}
+train_label  <- train[,"Hijos"]
+test_label <- test[,"Hijos"]
+train_covariables <- as.matrix(train[,-1])
+test_covariables <- as.matrix(test[,-1])
+```
+
+
+Ahora la creación de las matrices de entrenamiento y prueba
+
+```{r}
+train_matrix <- xgb.DMatrix(data = train_covariables, label = train_label)
+test_matrix <- xgb.DMatrix(data = test_covariables, label = test_label)
+```
+
+
+# Validación cruzada en k-folds para estimar el error
+
+Entrenamiento del modelo final. Los parámetros pueden ser optimizados vía optimizador Bayesiano. 
+
+```{r}
+numero_de_clases <- length(unique(train$Hijos))
+parametros_xgb <- list("objective"="multi:softprob",
+                       "eval_metric"="mlogloss",
+                       "num_class"=numero_de_clases)
+nrondas <- 50  #Número máximo de rondas a ejecutar en el boosteo
+nfolds_cv <- 5
+
+# Ajusta cv.nfold * cv.nround XGB models and save OOF predictions
+modelo_cv <- xgb.cv(params = parametros_xgb,
+                   data = train_matrix, 
+                   nrounds = nrondas,
+                   nfold = nfolds_cv,
+                   verbose = FALSE,
+                   prediction = TRUE)
+```
+
+# Error de las predicciones usando una muestra Out of Fold (OOF)
+
+La muestra out of fold es una sub-muestra que se hace en el procedimiento y que no se incluye para el entrenamiento funcionando, a pequeña escala, como otro test-set que da una idea de cómo se está comportando el modelo antes de que lo tanteemos en el test set definitivo. 
+
+
+```{r}
+prediccion_OOF <- data.frame(modelo_cv$pred) %>%
+  mutate(max_prob = max.col(., ties.method = "last"),
+         label = train_label+1)
+head(prediccion_OOF)
+```
+
+# Matriz de confusión para la predicción con OOF
+
+```{r}
+confusionMatrix(factor(prediccion_OOF$max_prob),
+                factor(prediccion_OOF$label),
+                mode = "everything")
+```
+
+
+Obsérven que hay buenos valores para los apartados de sensitivity, specificity y en general para precisión, sobre todo al predecir números de hijos no muy grandes. Para los valores más extremos se observa un decaimiento notorio en la precisión. Con esto en mente y viendo el aparente buen desempeño al usar los datos OOF, veamos qué tal se da el desempeño en nuestra base de test
+
+#  Entrenamiento del modelo y evaluación del desempeño en datos de prueba
+
+Primero se entrena el modelo con los parámetros predefinidos arriba 
+
+```{r}
+parametros_xgb <- list("objective"="multi:softprob",
+                       "eval_metric"="mlogloss",
+                       "num_class"=numero_de_clases,
+                       eta = 0.3,
+                       early_stoppin_rounds = 200,
+                       nfold =10, nrounds = 1000,
+                       max_depth = 6)   #Se puede hacer hyperparameter tunning
+modelo_xg <- xgb.train(params = parametros_xgb,
+                       data = train_matrix,
+                       nrounds = nrondas)
+```
+
+Ahora se hace la predicción para el conjunto de prueba
+
+```{r}
+# Predict para el test set
+test_pred <- predict(modelo_xg, newdata = test_matrix)
+test_prediction <- matrix(test_pred, nrow = numero_de_clases,
+                          ncol=length(test_pred)/numero_de_clases) %>%
+  t() %>%
+  data.frame() %>%
+  mutate(label = test_label+1,
+         max_prob = max.col(., "last"))
+# Matriz de confusión para el test set
+confusionMatrix(factor(test_prediction$max_prob),
+                factor(test_prediction$label),
+                mode = "everything")
+```
+
+# Importancia de las variables
+
+```{r}
+# Nombres de las variables
+nombres <-  colnames(train[,-1])
+# Muestra la matriz de importancia de las variables
+matriz_de_importancia = xgb.importance(feature_names = nombres, model = modelo_xg)
+head(matriz_de_importancia)
+```
+
+Gráfico para la importancia de las variables y su aporte a la clasificación del modelo
+
+```{r}
+P1 <- xgb.ggplot.importance(matriz_de_importancia)
+print(P1) 
+```
+
+
+
