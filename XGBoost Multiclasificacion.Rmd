@@ -148,4 +148,63 @@ print(P1)
 ```
 
 
+# Reducción de variables en búsqueda de mejoría
+
+```{r}
+sub_train <- train[,c(1,12,16,17,20,15)]
+sub_train_label  <- sub_train[,1]
+sub_train_covariables <- as.matrix(sub_train[,-1])
+sub_test <- test[,c(1,12,16,17,20,15)]
+sub_test_label  <- sub_test[,1]
+sub_test_covariables <- as.matrix(sub_test[,-1])
+head(sub_train)
+```
+
+```{r}
+sub_train_matrix <- xgb.DMatrix(data = sub_train_covariables, label = sub_train_label)
+sub_test_matrix <- xgb.DMatrix(data = sub_test_covariables, label = sub_test_label)
+```
+
+```{r}
+parametros_xgb2 <- list("objective"="multi:softprob",
+                       "eval_metric"="mlogloss",
+                       "num_class"=numero_de_clases,
+                       eta = 0.3,
+                       early_stoppin_rounds = 200,
+                       nfold =10,
+                       max_depth = 6)   #Se puede hacer hyperparameter tunning
+modelo_xg2 <- xgb.train(params = parametros_xgb2,
+                       data = sub_train_matrix, nrounds=1000)
+```
+
+```{r}
+# Predict para el test set
+test_pred2 <- predict(modelo_xg2, newdata = sub_test_matrix)
+test_prediction2 <- matrix(test_pred, nrow = numero_de_clases,
+                          ncol=length(test_pred2)/numero_de_clases) %>%
+  t() %>%
+  data.frame() %>%
+  mutate(label = sub_test_label+1,
+         max_prob = max.col(., "last"))
+# Matriz de confusión para el test set
+confusionMatrix(factor(test_prediction2$max_prob),
+                factor(test_prediction2$label),
+                mode = "everything")
+```
+
+
+```{r}
+# Nombres de las variables
+nombres2 <-  colnames(sub_train[,-1])
+# Muestra la matriz de importancia de las variables
+matriz_de_importancia2 = xgb.importance(feature_names = nombres2, model = modelo_xg2)
+head(matriz_de_importancia2)
+```
+
+```{r}
+P2 <- xgb.ggplot.importance(matriz_de_importancia2)
+print(P2) 
+```
+
+
 
