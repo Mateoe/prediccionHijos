@@ -1,0 +1,418 @@
+---
+title: "Variables_TAE"
+author: "Estefania Echeverry Franco"
+date: "26 de marzo de 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+## Las variables de la base de datos
+
+Las variables son:
+
+**p8520s4:** Recolección de basuras.
+**p6081:** Padre vive en el Hogar
+**p8520s5:** Acueducto
+**P1896:** Nivel de Satisfaccción con los Ingresos
+**P6160:** Analfabetismo
+
+Se cargan las base de datos
+```{r}
+setwd("~/Universidad Nacional/Noveno Semestre/Técnicas de Aprendizaje Estadístico")
+datos_vivienda <- read.csv('Datos de la vivienda.csv', sep = ";", dec = ",")
+
+compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv",sep=";", dec=",")
+
+educacion <- read.csv("Educación.csv",sep = ";", dec = ",")
+
+
+```
+
+
+```{r}
+colnames(datos_vivienda)[1] <-  "Directorio"
+colnames(compo_hogar)[1] <- "Directorio"
+colnames(educacion)[1] <- "Directorio"
+
+datos_vivienda$Directorio <- as.factor(datos_vivienda$Directorio)
+compo_hogar$DIRECTORIO <- as.factor(compo_hogar$Directorio)
+educacion$DIRECTORIO <- as.factor(educacion$Directorio)
+
+```
+
+# Número de hijos
+```{r}
+#Se seleccionan las columnas directorio y P6051
+directorio_P6051 <- compo_hogar %>% dplyr::select(Directorio,P6051)
+#Se cuentan el numero de hijos por hogar
+hijos_hogar <- directorio_P6051 %>% filter(P6051 == 3) %>% count(Directorio)
+#Se renombra la columna
+colnames(hijos_hogar)[2] <- "Hijos"
+#head(hijos_hogar)
+hijos_compo<- merge(x = hijos_hogar, y = compo_hogar, all= TRUE) 
+hijos_compo[is.na(hijos_compo$n),] <- 0 
+#sacando el Jefe del Hogar
+jefe_compo <- compo_hogar %>% filter(P6051==1)
+hijos_jefe<- merge(x = hijos_hogar, y = jefe_compo, all= TRUE)
+hijos_jefe[is.na(hijos_jefe$n),] <- 0
+hijos_jefex<- hijos_jefe[,1:2]
+
+```
+
+
+# Caracteristicas y Composición del Hogar
+### Variable 6081 Padre vive en este Hogar ( Caracteristicas y Composición del Hogar)
+
+*El padre de .. vive en este hogar*
+
+14. El padre de ____ ¿vive en este hogar?
+1 Sí
+2 No
+3 Fallecido
+
+
+```{r}
+resumen_nump <-tapply(hijos_jefe$Hijos, hijos_jefe$P6081, summary)
+resumen_nump
+```
+
+```{r}
+tablap <- do.call(rbind,resumen_nump)
+tablap
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x=P6081)) + geom_bar() 
+
+```
+```{r}
+ggplot(hijos_jefe, aes(x=factor(P6081), y=Hijos)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1) + xlab("Padre vive en el Hogar")+ylab("Cantidad de Hijos")+ggtitle("Padres vive hogar vs Cantidad de Hijos")
+```
+
+Se nota que en la mayoria de lugares el padre no vive con ellos, o fallecio
+
+## Variable P1896  Nivel de Satisfacción de los Ingresos ( Caracteristicas y Composición del Hogar)
+
+**Nivel de Satisfacción de los Ingresos**
+
+En general, qué tan satisfecho(a) se siente ... con su ingreso actualmente?
+
+Las siguientes preguntas tratan sobre la satisfacción que Ud. siente, en una escala de 0 a 10. Donde 0 significa que se siente "totalmente insatisfecho" y 10 significa que se siente "totalmente satisfecho".
+24. En general, qué tan satisfecho(a) se siente ... con su ingreso actualmente?
+10 Totalmente satisfecho(a)
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0 Totalmente insatisfecho(a)
+
+```{r}
+ hijos_jefena<- hijos_jefe[!is.na(hijos_jefe$P1896),]
+resumen_numim <- tapply(hijos_jefena$Hijos, hijos_jefena$P1896, summary)
+resumen_numim
+```
+```{r}
+tablaim <- do.call(rbind,resumen_numim)
+tablaim
+```
+
+
+```{r}
+ggplot(hijos_jefena, aes(x=factor(P1896))) + geom_bar()
+ggplot(hijos_jefena, aes(x = factor(P1896), y = Hijos)) + geom_boxplot(outlier.colour = "red", outlier.shape = 1)
+```
+
+
+## Variable P8520S4 (Recolección de Basura) Datos de la Vivienda
+
+**Recolección de basuras**
+
+5. ¿Con cuáles de los siguientes servicios públicos, privados o comunales cuenta la vivienda?
+4. Recolección de basuras
+1 Sí
+2 No
+
+```{r}
+datos_vivienda_re <- datos_vivienda %>% dplyr::select(Directorio, P8520S4)
+hijos_jefe <- merge(hijos_jefe, datos_vivienda_re, all=TRUE)
+```
+
+```{r}
+resumenes_num <- tapply(hijos_jefe$Hijos , hijos_jefe$P8520S4,summary)
+```
+
+```{r}
+tablar <- do.call (rbind, resumenes_num)
+tablar
+```
+
+```{r}
+
+ggplot(hijos_jefe, aes(x = as.factor(P8520S4), y = Hijos)) + geom_boxplot(outlier.colour="red", outlier.shape = 1) +
+    xlab("Recolección de basuras") + 
+    ggtitle("Número de hijos según la tenencia de Recolección de Basuras")+
+    theme(plot.title = element_text(hjust = 0.5)) 
+    
+```
+```{r}
+hijos_jefe$P8520S4 <- as.factor(hijos_jefe$P8520S4)
+
+modn <- lm(Hijos ~ P8520S4 , data=hijos_jefe)
+summary(modn)
+```
+
+
+## variable P8520S5 (Acueducto) Datos de la Vivienda
+
+** Acueducto**
+
+	5. ¿Con cuáles de los siguientes servicios públicos, privados o comunales cuenta la vivienda?
+2. Acueducto
+1 Sí
+2 No
+
+
+
+```{r}
+datos_vivienda_acu <- datos_vivienda %>% dplyr::select(Directorio, P8520S5)
+hijos_jefe <- merge(hijos_jefe, datos_vivienda_acu, all=TRUE)
+```
+
+
+
+```{r}
+resumenes_num_acu<- tapply(hijos_jefe$Hijos , hijos_jefe$P8520S5,summary)
+resumenes_num_acu
+```
+
+```{r}
+tablacu <- do.call (rbind, resumenes_num_acu)
+tablacu
+
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P8520S5), y = Hijos)) + geom_boxplot(outlier.colour ="red", outlier.shape = 1) +
+    xlab("Acueducto") + 
+    ggtitle("Número de hijos según la tenencia de Acueducto")+
+    theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+
+```{r}
+hijos_jefe$P8520S5 <- as.factor(hijos_jefe$P8520S5)
+modnacu <- lm(Hijos ~ P8520S5 , data=hijos_jefe)
+summary(modnacu)
+```
+
+```{r}
+modn2 <- lm(Hijos ~ P8520S4 + P8520S5 , data=hijos_jefe)
+summary(modn2)
+```
+
+
+## Variable P6160 (Analfabetismo) Educación
+
+** Analfabetismo**
+
+¿Sabe leer y escribir?
+
+1 Sí
+2 No
+
+```{r}
+educacion_alf <- educacion %>% dplyr::select(Directorio, P6160)
+hijos_jefe <- merge(hijos_jefe, educacion_alf, all=TRUE)
+```
+
+```{r}
+resumenes_num_aLf<- tapply(hijos_jefe$Hijos , hijos_jefe$P6160,summary)
+resumenes_num_aLf
+```
+
+```{r}
+tablalf <- do.call (rbind, resumenes_num_aLf)
+tablalf
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P6160), y = Hijos)) + geom_boxplot(outlier.colour="red", outlier.shape = 1) +
+    xlab("Analfabetismo") + 
+    ggtitle("Número de hijos según si sabe leer y escribir")+
+    theme(plot.title = element_text(hjust = 0.5)) 
+```
+#Base de Datos Salud
+
+```{r}
+salud <- read.csv("Salud.csv",sep = ";", dec = ",")
+```
+
+```{r}
+colnames(salud)[1] <- "Directorio"
+salud$Directorio <- as.factor(salud$Directorio)
+hijos_jefe <- merge(hijos_jefe, salud, all=TRUE)
+```
+
+
+# Salud
+## Variable P6090 "Afiliado a EPS" (Salud)
+
+¿ _____ está afiliado(a) (cotizante o beneficiario(a)) a alguna entidad de seguridad social en salud? (Entidad Promotora de Salud - EPS o Entidad Promotora de Salud Subsidiada -EPS-S )
+
+1. ¿ ______ está afiliado (a), es cotizante o es beneficiario (a) de alguna entidad de seguridad social en salud? (ver nota) (Entidad promotora de salud [EPS] o entidad promotora de salud subsidiada EPS-S)
+1 Sí
+2 No
+9 No sabe, no informa
+
+
+```{r}
+resumenes_num_EPS<- tapply(hijos_jefe$Hijos , hijos_jefe$P6090,summary)
+resumenes_num_EPS
+
+```
+
+```{r}
+tablaEPS <- do.call (rbind, resumenes_num_EPS)
+tablaEPS
+```
+
+
+```{r}
+ggplot(hijos_jefe, aes(x=factor(P6090))) + geom_bar()
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P6090), y = Hijos)) + geom_boxplot(outlier.colour="red", outlier.shape = 1) +
+    xlab("EPS") + 
+    ggtitle("Número de hijos según si sabe tiene EPS")+
+    theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+```{r}
+hijos_jefe$P6090 <- as.factor(hijos_jefe$P6090)
+modeps <- lm(Hijos ~ P6090 , data =hijos_jefe)
+summary(modeps)
+```
+# Variable P6100 (Regimen de Seguridad)
+
+¿A cual de los siguientes regímenes de seguridad social en salud está afiliado:
+
+
+3. ¿A cuál de los siguientes regímenes de seguridad social en salud está afiliado?
+1 Contributivo (eps)
+2 Especial (fuerzas armadas, ecopetrol, universidades públicas, magisterio)
+3 Subsidiado (eps-s)
+9 No sabe, no informa
+
+```{r}
+resumenes_num_regi<- tapply(hijos_jefe$Hijos , hijos_jefe$P6100,summary)
+resumenes_num_regi
+```
+
+```{r}
+tablaregi <- do.call (rbind, resumenes_num_regi)
+tablaregi
+```
+
+
+```{r}
+ggplot(hijos_jefe, aes(x=factor(P6100))) + geom_bar()
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P6100), y = Hijos)) + geom_boxplot(outlier.colour="red", outlier.shape = 1) +
+    xlab("Regimen de Seguridad") + 
+    ggtitle("Número de hijos según su Regimen de Seguridad")+
+    theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+```{r}
+hijos_jefe$P6100 <- as.factor(hijos_jefe$P6100)
+moders<- lm(Hijos ~ P6100 , data =hijos_jefe)
+summary(moders)
+```
+#Variable 6127 (Estado de Salud)
+
+El estado de salud de .. en general es
+
+10. El estado de salud de ___ en general, es:
+  1 Muy bueno
+2 Bueno
+3 Regular
+4 Malo
+
+```{r}
+resumenes_num_est<- tapply(hijos_jefe$Hijos , hijos_jefe$P6127,summary)
+resumenes_num_est
+```
+
+```{r}
+tablarest <- do.call (rbind, resumenes_num_est)
+tablarest
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x=factor(P6127))) + geom_bar()
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P6127), y = Hijos)) + geom_boxplot(outlier.colour="red", outlier.shape = 1) +
+  xlab("Estado de Salud segun la Persona") + 
+  ggtitle("Número de hijos según el estado de salud")+
+  theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+
+```{r}
+hijos_jefe$P6127 <- as.factor(hijos_jefe$P6127)
+modees<- lm(Hijos ~ P6127 , data =hijos_jefe)
+summary(modees)
+```
+
+
+# Variable 5672 (Estado de Embarazo)
+
+¿ _____ está embarazada actualmente o ha tenido hijos?
+
+44. ¿_____ está embarazada actualmente o ha tenido hijos?
+1. Sí
+2. No
+
+
+
+```{r}
+resumenes_num_emb<- tapply(hijos_jefe$Hijos , hijos_jefe$P5672,summary)
+resumenes_num_emb
+```
+
+```{r}
+tablaremb <- do.call (rbind, resumenes_num_emb)
+tablaremb
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x=factor(P5672))) + geom_bar()
+```
+
+```{r}
+ggplot(hijos_jefe, aes(x = as.factor(P5672), y = Hijos)) + geom_boxplot(outlier.colour="red", outlier.shape = 1) +
+    xlab("Embarazo") + 
+    ggtitle("Número de hijos según embarazo")+
+    theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+                                                                                                                                                                                                                                                                                                                                                                                   
