@@ -155,6 +155,9 @@ compo_hogar %>%
 colnames(edad_conyugue)[2] <- 'edad_conyugue'
 ```
 
+```{r}
+ed_max <- compo_hogar %>% filter(P6051==1 | P6051==2) %>% group_by(clave) %>% mutate(edad_maxima=max(P6040)) %>% select(clave, edad_maxima)
+```
 
 ```{r}
 BASE_FINAL %>% 
@@ -164,7 +167,9 @@ BASE_FINAL %>%
 ```{r}
 colnames(BASE_FILTRADA)[2] <- 'clave' 
 BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = 'clave')
+BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = ed_max, all.x = TRUE, by = 'clave')
 BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
+BASE_FILTRADA$edad_maxima[is.na(BASE_FILTRADA$edad_maxima)] <- BASE_FILTRADA$P6040
 ```
 
 
@@ -184,7 +189,7 @@ write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
 
 ```{r}
 BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO))
-nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue")
+nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue","edad_maxima")
 length(nombres)
 colnames(BASE_FILTRADA) <- nombres
 colnames(BASE_FILTRADA)
