@@ -120,11 +120,12 @@ salud %>%
 # Union de todas las bases 
 
 ```{r}
-BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe, edu_filtrada, 
-                                                      fuerza_trabajo_filtrada,
-                                                      servi_hogar_filtrada,
-                                                      uso_energetico_filtrada,
-                                                      salud_filtrada))
+BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe,
+                                                                    edu_filtrada,
+                                                                fuerza_trabajo_filtrada,
+                                                                servi_hogar_filtrada,
+                                                                uso_energetico_filtrada,
+                                                                salud_filtrada))
 BASE_FINAL %>% 
   relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
 ```
@@ -149,6 +150,7 @@ variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435
 
 
 ```{r}
+#creando Edad conyugue
 compo_hogar %>% 
   filter(P6051==2) %>% 
   dplyr::select(clave,P6040) -> edad_conyugue 
@@ -156,7 +158,16 @@ colnames(edad_conyugue)[2] <- 'edad_conyugue'
 ```
 
 ```{r}
-ed_max <- compo_hogar %>% filter(P6051==1 | P6051==2) %>% group_by(clave) %>% mutate(edad_maxima=max(P6040)) %>% select(clave, edad_maxima)
+#creando Edad máxima entre los padres
+ed_max <- compo_hogar %>% filter(P6051==1 | P6051==2) %>% group_by(clave) %>% mutate(edad_maxima=max(P6040)) %>% select(clave, edad_maxima, P6051)
+ed_max<- ed_max %>% filter(P6051==1) %>% select(clave, edad_maxima)
+```
+
+```{r}
+#creando El cabeza de hogar vive con pareja? 1.Si y 2.No
+pareja<- compo_hogar %>% filter(P6051==1) %>% select(clave, P6071)
+pareja$P6071[is.na(pareja$P6071)]<-2
+colnames(pareja)[2]<-"con_pareja"
 ```
 
 ```{r}
@@ -166,10 +177,19 @@ BASE_FINAL %>%
 
 ```{r}
 colnames(BASE_FILTRADA)[2] <- 'clave' 
-BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = 'clave')
-BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = ed_max, all.x = TRUE, by = 'clave')
+#BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = 'clave')
+#BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = ed_max, all.x = TRUE)
+#BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = pareja, all.x = TRUE, by = 'clave')
+#BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
+#BASE_FILTRADA$edad_maxima[is.na(BASE_FILTRADA$edad_maxima)] <- BASE_FILTRADA$P6040
+#BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- BASE_FILTRADA$P6071
+BASE_FILTRADA <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(BASE_FILTRADA,
+                                                                       edad_conyugue,
+                                                                       ed_max,
+                                                                       pareja))
 BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
 BASE_FILTRADA$edad_maxima[is.na(BASE_FILTRADA$edad_maxima)] <- BASE_FILTRADA$P6040
+BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- BASE_FILTRADA$P6071
 ```
 
 
@@ -189,7 +209,7 @@ write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
 
 ```{r}
 BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO))
-nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue","edad_maxima")
+nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue","edad_maxima","con_pareja")
 length(nombres)
 colnames(BASE_FILTRADA) <- nombres
 colnames(BASE_FILTRADA)
