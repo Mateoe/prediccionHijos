@@ -76,11 +76,16 @@ colnames(compo_hogar)[1]<- "Directorio"
 
 ```
 
+```{r}
+compo_hogar$clave <- paste0(compo_hogar$Directorio, compo_hogar$SECUENCIA_P)
+```
+
+
 Encontramos el numero de hijos por hogar
 ```{r}
 
 #Se cuentan el numero de hijos por hogar
-hijos_hogar <- compo_hogar %>% select(Directorio,P6051) %>% filter(P6051 == 3) %>% count(Directorio)
+hijos_hogar <- compo_hogar %>% select(clave, P6051) %>% filter(P6051 == 3) %>% count(clave)
 
 #Se renombra la columna 2 como Hijos
 colnames(hijos_hogar)[2] <- "Hijos"
@@ -91,10 +96,10 @@ head(hijos_hogar)
 Asignación de hijos a cada jefe de hogar
 ```{r}
 #Se filtra el parentezco dejando solo a los jefes de hogar
-jefe_hogar <- compo_hogar %>% filter(P6051 == 1 & SECUENCIA_P ==1)
+jefe_hogar <- compo_hogar %>% filter(P6051 == 1)
 
 #Se asocian los hijos a cada jefe de hogar
-hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "Directorio", all.x = TRUE)
+hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "clave", all.x = TRUE)
 
 #A los jefe de hogar sin hijos se les establecen cero hijos
 hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
@@ -532,3 +537,35 @@ Dado que no se aprecian diferencias significaivas en las cajas del gráfico ante
 
 ## Nota:
 Dado que el resto de variables del conjunto dependen de desta y no se aprecia una relación importante con el numero de hijos, **no se consideran**.
+
+
+
+
+```{r}
+#Resumenes numericos
+resumen_numerico <- tapply(hijos_jefe$Hijos, hijos_jefe$P6071, summary)
+
+#Resumenes numericos como tabla
+tabla<-do.call(rbind, resumen_numerico)
+
+#Resumenes numericos mejor presentados
+kable(tabla, row.names = TRUE)
+```
+
+
+```{r}
+mean_P6071 <- hijos_jefe %>% 
+  select(P6071,Hijos) %>% 
+  filter(!is.na(P6071)) %>% 
+  group_by(P6071) %>% 
+  dplyr::summarize(Hijos = mean(Hijos,na.rm=TRUE))
+
+ggplot(subset(hijos_jefe, !is.na(P6071)), aes(x = as.factor(P6071), y = Hijos)) +
+    geom_boxplot() +
+    xlab("Conygue vive en el hogar") + 
+    ggtitle("Número de hijos si el conyugue vive en el hogar")+
+    theme(plot.title = element_text(hjust = 0.5))+
+    geom_point(mean_P6071, mapping = aes(x = as.factor(P6071), y = Hijos),
+               col = "Red")
+```
+
