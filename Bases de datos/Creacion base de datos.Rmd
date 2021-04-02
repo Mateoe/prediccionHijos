@@ -1,10 +1,6 @@
 ---
 title: "Creación base de datos"
-author: - "**Alejandro Bedoya**"
-- "**Estefania Echeverry**"
-- "**Sebastian Agudelo**"
-- "**Mateo Espinal**"
-- "**Juan Fernando Patiño**"
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry"
 date: "Abril 2021"
 output: 
   prettydoc::html_pretty:
@@ -177,20 +173,12 @@ Se filtra *"BASE_FINAL"* para tener únicamente las variables pre-analizadas y e
 
 ```{r}
 # Vector con la seleccion de las variables
-variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435',
+variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P6435',
                            'P5000','P5024','P5502','P5013S1','I_HOGAR','PERCAPITA',
-                           'I_OU','CANT_PERSONAS_HOGAR', 'P5018',
-                           'P1070','P6020', 'P6071','P6040', 'P6127', "P6100")
+                           'CANT_PERSONAS_HOGAR', 'P5018',
+                           'P1070','P6020','P6040', 'P6127')
 ```
 
-
-```{r}
-# Obteniendo la Edad del conyugue
-compo_hogar %>% 
-  filter(P6051==2) %>% 
-  dplyr::select(clave,P6040) -> edad_conyugue 
-colnames(edad_conyugue)[2] <- 'edad_conyugue'
-```
 
 ```{r}
 # Obteniendo la Edad máxima entre los padres
@@ -211,27 +199,24 @@ BASE_FINAL %>%
   dplyr::select(all_of(variables_definitivas)) -> BASE_FILTRADA 
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Se renombra la variable clave, pues al concatenar tenia una variacion
 colnames(BASE_FILTRADA)[2] <- 'clave' 
 # Se incluyen las nuevas variables creadas a la base de datos
 BASE_FILTRADA <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(BASE_FILTRADA,
-                                                                       edad_conyugue,
                                                                        ed_max,
                                                                        pareja))
-# Los hogares que hayan quedado con NA's tendran cero hijos 
-BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
 # Los hogares que hayan quedado con NA's en edad_maxima tendran el dato de la columna P6040
 BASE_FILTRADA$edad_maxima[is.na(BASE_FILTRADA$edad_maxima)] <- BASE_FILTRADA$P6040
 # Los hogares que hayan quedado con NA's en con_pareja tendran el dato de la columna P6071
-BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- BASE_FILTRADA$P6071
+BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- 1
 ```
 
 # Exportación de las bases de datos
 
 ```{r}
 # Guardamos la base final con todas las variables de cada hogar
-write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
+#write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
 ```
 
 ```{r}
@@ -243,9 +228,9 @@ write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
 
 ```{r}
 # Eliminamos clave y DIRECTORIO pues no se usaran dentro del modelo
-BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO))
+BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO, P6040))
 # Se renombran las variables que quedaron finalmente
-nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue","edad_maxima","con_pareja")
+nombres <- c("Hijos","nivel_edu","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","estado_salud","edad_maxima","con_pareja")
 length(nombres) # Obteniendo la cantidad de variables
 # Se renombran dentro de BASE_FILTRADA las variables que quedaron finalmente para mejor manipulacion
 colnames(BASE_FILTRADA) <- nombres 
@@ -259,18 +244,9 @@ A continuación se presenta la etapa de preprocesamiento para los NA's de la bas
 **Inputación a categorías no sabe/ no responde**
 
 ```{r}
-# A conyugues sin edad, pongale la edad del jefe
-BASE_FILTRADA$edad_conyugue[BASE_FILTRADA$edad_conyugue==0] <- BASE_FILTRADA$edad_jefe[BASE_FILTRADA$edad_conyugue==0]
-# NA's en regimen salud se les agrega a la categoría 9
-BASE_FILTRADA$regimen_salud[is.na(BASE_FILTRADA$regimen_salud)] <- 9
-# NA's en si el conyugue vive en el hogar se les agrega a la categoría 0
-BASE_FILTRADA$conyugue_hogar[is.na(BASE_FILTRADA$conyugue_hogar)] <- 0
 # NA's en tipo de trabajo se les agrega a la categoría 0
 BASE_FILTRADA$tipo_trabajo[is.na(BASE_FILTRADA$tipo_trabajo)] <- 0
 # Se observa si quedó algun NA dentro de las variables
-sum(is.na(BASE_FILTRADA$edad_conyugue))
-sum(is.na(BASE_FILTRADA$regimen_salud))
-sum(is.na(BASE_FILTRADA$conyugue_hogar))
 sum(is.na(BASE_FILTRADA$tipo_trabajo))
 ```
 
@@ -312,13 +288,11 @@ sum(is.na(BASE_FILTRADA$comidas_dia))
 sum(is.na(BASE_FILTRADA$I_HOGAR))
 sum(is.na(BASE_FILTRADA$num_cuartos))
 sum(is.na(BASE_FILTRADA$PERCAPITA))
-sum(is.na(BASE_FILTRADA$I_OU))
 sum(is.na(BASE_FILTRADA$CANT_PERSONAS_HOGAR))
 # Se observa la cantidad de NA's entre todas las variables numericas
 sum(is.na(BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos & 
             BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos &
             BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$PERCAPITA &
-            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$I_OU &
             BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$CANT_PERSONAS_HOGAR))
 # Se obtiene las observaciones con NA's
 nas_833 <- which(is.na(BASE_FILTRADA$I_HOGAR))
@@ -353,12 +327,8 @@ sum(is.na(BASE_FILTRADA$estado_civil))
 sum(is.na(BASE_FILTRADA$tipo_vivienda))
 # NA'S sexo
 sum(is.na(BASE_FILTRADA$sexo))
-# NA'S conyugue hogar
-sum(is.na(BASE_FILTRADA$conyugue_hogar))
 # NA'S estado salud
 sum(is.na(BASE_FILTRADA$estado_salud))
-# NA'S regimen salud
-sum(is.na(BASE_FILTRADA$regimen_salud))
 ```
 
 **Número de sanitarios**

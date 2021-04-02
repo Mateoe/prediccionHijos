@@ -192,36 +192,6 @@ BASE_FILTRADA <- read.csv("BASE_FILTRADA.csv", header = TRUE)
 BASE_FILTRADA <- BASE_FILTRADA[,-1]
 ```
 
-# P6040: Edad del jefe de hogar
-
-Recordar que el análisis se hace con el interés particular sobre los cabezas de hogar. 
-
-```{r}
-h1 <- ggplot(BASE_FINAL, aes(x=P6040))
-h1 <- h1 + geom_histogram(binwidth = 1, col='black', fill='blue', alpha=0.4)
-h1 <- h1 + xlab("EDAD")+ylab("FRECUENCIA")
-h1 <- h1 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA EDAD")+theme_bw()
-h1
-```
-
-Las edades más recurrentes entre las cabezas de hogar del estudio se encuentran entre los 30 y 60 años aproximadamente. Esta es una variable que, a priori, puede considerarse determinante y podría esperarse tenga alguna influencia bien sea directa o conjunta sobre la cantidad de hijos. Se cree que una persona de más de 35 años, es más propensa a tener más hijos que una pesona menor de 25 años. 
-
-
-```{r}
-p1 <- ggplot(BASE_FINAL, aes(x=P6040, y=Hijos))
-p1 <- p1 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
-p1 <- p1 + geom_vline(xintercept = c(28,65))
-p1 <- p1 + xlab("Edad")+ylab("Cantidad de hijos")
-p1 <- p1 + ggtitle("Edad vs cantidad de hijos")+theme_bw()
-p1
-```
-
-```{r}
-cor(BASE_FINAL$P6040, BASE_FINAL$Hijos)
-```
-
-A pesar de tener una densidad bastante considerable a lo largo de las edades, es de rescatar que los picos para la variable cantidad de hijos se encuentran en un segmento de edades esperables y acordes a la suposición previa. Entre los 28 y los 65 años, los jefes de familia han reportado cantidades mayores de hijos. Además, al revisar la correlación entre ambas variables, se observa una correlación negativa de **-0.2382**, que sirve de insumo para esperar una posible relación entre ambas variables. Este indicio ha bastado para determinar que esta variable se incluirá en la base de datos final con que se entrenarán los modelos.  
-
 
 # Máximo nivel educativo alcanzado versus número de hijos
 
@@ -267,10 +237,6 @@ P3
 
 Se observó entonces que si bien hay variabilidad en el tercer cuartil de algunos niveles educativos (1, 11, 12 y 13), la variable parece mantenerse bastante homogénea en lo que a su relación con la cantidad de hijos respecta. No obstante, al considerarse que esta variable puede ser de utilidad en la creación de nuevas variables, decide ser incluída en la base que se usará para el entrenamiento de los modelos. 
 
-
-
-
-A pesar de que el gráfico que nos muestra las barras de frecuencias es bastante diciente en términos del comportamiento de la variable, no sucede así con el gráfico de la influencia de la misma sobre la cantidad de hijos; más allá de variar por muy poco la media (el promedio de hijos en hogares donde el cabeza de hogar estudia es ligeramente menor), no hay cambios notorios que indiquen la relevancia de la misma en el interés de este estudio. Lo anterior ha llevado a descartar esta variable.
 
 # P6435 Tipo de trabajo
 
@@ -412,16 +378,6 @@ P17 <- P17 + ggtitle("Ingreso per capita del hogar vs cantidad de hijos")+theme_
 P17
 ```
 
-# I_OU: Ingreso mensual total de la otra unidad de gasto
-
-
-```{r message=FALSE, warning=FALSE}
-P19 <- ggplot(BASE_FINAL, aes(x=I_OU, y=Hijos))
-P19 <- P19 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
-P19 <- P19 + xlab("Ingreso otra unidad de gasto")+ylab("Cantidad de hijos")
-P19 <- P19 + ggtitle("Ingreso otra unidad de gasto vs cantidad de hijos")+theme_bw()
-P19
-```
 # CANT_PERSONAS_HOGAR: Cantidad de personas en el hogar
 
 ```{r}
@@ -440,8 +396,8 @@ P21 <- P21 + ggtitle("Cantidad de personas en el hogar vs cantidad de hijos")+th
 P21
 ```
 
-# P5018: Pago por consumo de energía en la ultima factura
 
+# P5018: Pago por consumo de energía en la ultima factura
 
 ```{r message=FALSE, warning=FALSE}
 P23 <- ggplot(BASE_FINAL, aes(x=P5018, y=Hijos))
@@ -450,6 +406,7 @@ P23 <- P23 + xlab("Pago por consumo de energía")+ylab("Cantidad de hijos")
 P23 <- P23 + ggtitle("Pago por consumo de energía vs cantidad de hijos")+theme_bw()
 P23
 ```
+
 # P1070: Tipo vivienda
 
 ```{r}
@@ -470,6 +427,7 @@ P25 <- ggplot(BASE_FINAL, aes(x=factor(P1070), y=Hijos))+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P25
 ```
+
 # P6020: Sexo del jefe de hogar
 
 
@@ -499,31 +457,7 @@ P27 <- ggplot(BASE_FINAL, aes(x=factor(P6020), y=Hijos))+
 P27
 ```
 
-# P6071: Conyuge hogar
 
-Dos niveles:
-
-* Sí
-* No
-
-```{r}
-P28 <- ggplot(subset(BASE_FINAL, !is.na(P6071)), aes(x=factor(P6071)))
-P28 <- P28 + geom_bar(width = 0.8, fill=c("blue", "purple"), alpha=0.4, col='black' )
-P28 <- P28 + scale_x_discrete("¿La pareja vive en el hogar?") + scale_y_continuous("FRECUENCIA")
-P28 <- P28 + labs(title = "Frecuencias: casos en que vive en el hogar vs no vive en el hogar")+theme_bw()
-P28
-```
-
-```{r message=FALSE, warning=FALSE}
-P29 <- ggplot(subset(BASE_FINAL, !is.na(P6071)), aes(x=factor(P6071), y=Hijos))+
-  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
-               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
-  labs(title = '¿El conyuge vive en el hogar? vs número de hijos',subtitle = ' ',caption = ' ',
-       x = '¿Conyuge vive en el hogar? Si vs no', y='Numero de hijos',color=NULL)+
-  theme_elegante()+
-  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
-P29
-```
 
 # P6127: Estado de salud
 
@@ -546,44 +480,7 @@ P31 <- ggplot(BASE_FINAL, aes(x=factor(P6127), y=Hijos))+
 P31
 ```
 
-# P6100: Regimen de salud
 
-```{r}
-P32 <- ggplot(subset(BASE_FINAL, !is.na(P6100)), aes(x=factor(P6100)))
-P32 <- P32 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
-P32 <- P32 + scale_x_discrete("Regimen de salud") + scale_y_continuous("FRECUENCIA")
-P32 <- P32 + labs(title = " Frecuencias para el regimen de salud")+theme_bw()
-P32
-```
-
-```{r message=FALSE, warning=FALSE}
-P33 <- ggplot(BASE_FINAL, aes(x=factor(P6100), y=Hijos))+
-  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
-               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
-  labs(title = 'Boxplot para regimen de salud vs hijos en el hogar',subtitle = ' ',caption = ' ',
-       x = 'Regimen de salud', y='Numero de hijos',color=NULL)+
-  theme_elegante()+
-  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
-P33
-```
-
-# Edad_conyuge: Variable construida
-
-```{r}
-h34 <- ggplot(BASE_FILTRADA, aes(x=edad_conyuge))
-h34 <- h34 + geom_histogram(binwidth = 1, col='black', fill='blue', alpha=0.4)
-h34 <- h34 + xlab("Edad del conyuge")+ylab("FRECUENCIA")
-h34 <- h34 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA EDAD DEL CONYUGE")+theme_bw()
-h34
-```
-```{r}
-P35 <- ggplot(BASE_FILTRADA, aes(x=edad_conyuge, y=Hijos))
-P35 <- P35 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
-P35 <- P35 + geom_vline(xintercept = c(28,65))
-P35 <- P35 + xlab("Edad del conyuge")+ylab("Cantidad de hijos")
-P35 <- P35 + ggtitle("Edad del conyuge vs cantidad de hijos")+theme_bw()
-P35
-```
 
 # Edad_maxima: Variable construida
 
@@ -602,6 +499,7 @@ P37 <- P37 + xlab("Edad maxima")+ylab("Cantidad de hijos")
 P37 <- P37 + ggtitle("Edad maxima vs cantidad de hijos")+theme_bw()
 P37
 ```
+
 # Con_pareja: Variable construida
 
 
@@ -630,5 +528,19 @@ P39 <- ggplot(BASE_FILTRADA, aes(x=factor(con_pareja), y=Hijos))+
 P39
 ```
 
-
+nivel_edu YA
+ALEJO tipo_trabajo
+ALEJO num_cuartos
+ALEJO num_sanitarios
+ALEJO estado_civil
+TEFA comidas_dia
+TEFA I_HOGAR
+TEFA PERCAPITA
+TEFA CANT_PERSONAS_HOGAR
+JUANFER consumo_energia
+JUANFER tipo_vivienda
+SEBAS sexo
+SEBAS estado_salud
+SEBAS edad_maxima
+SEBAS con_pareja
 
