@@ -1,11 +1,15 @@
+#-------------------------------------------------------------------------------
+# Aplicación creada por el equipo de Col Hogares                               
+# 
+# Integrantes:
+#       Alejandro Bedoya Cataño
+#       Estefanía Echeverry Franco
+#       Juan Fernando Patino Castro
+#       Mateo Espinal Londoño
+#       Sebastian Agudelo Jimenez
 #
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+# Para la asignatura: Técnicas de aprendizaje estadístico
+#-------------------------------------------------------------------------------
 
 #LEctura de las librerías
 library(shiny)
@@ -19,10 +23,17 @@ library(thematic)
 datos <- read.csv("../Bases de datos/BASE_FILTRADA(sin_nas).csv")
 
 #Selección de las varaibles relevantes del conjunto de datos
-datos <- datos %>% select(CANT_PERSONAS_HOGAR,edad_jefe,conyugue_hogar,edad_conyugue,sexo, Hijos)
+datos <- datos %>% select(CANT_PERSONAS_HOGAR,
+                          edad_maxima,
+                          sexo, 
+                          Hijos)
 
 #Nombrado de las variables del conjunto de datos
-colnames(datos) <- c("Personas hogar","Edad jefe","Conyugue hogar","Edad conyugue","Sexo", "Hijos")
+colnames(datos) <- c("Personas hogar",
+                     "Edad maxima",
+                     "Sexo", 
+                     "Hijos")
+
 
 
 #Definición de la interfaz de usuario
@@ -72,25 +83,10 @@ ui <- fluidPage(
                                 value = 3),
                     
                     #Definición del control desizante para la edad del jefe
-                    sliderInput("edad_jefe",
-                                "Edad del jefe de familia:",
+                    sliderInput("edad_maxima",
+                                "Edad maxima entre el conyugue y el jefe de familia:",
                                 min = 13,
                                 max = 113,
-                                value = 20),
-                    
-                    #Definición de las opciones para la convivencia con el conyugue
-                    radioButtons("conyugue_hogar", 
-                                 "¿El conyugue vive en el hogar?",
-                                 c("Si" = 1,
-                                   "No" = 2
-                                 )
-                    ),
-                    
-                    #Definición del control desizante para la edad del conyugue
-                    sliderInput("edad_conyugue",
-                                "Edad del conyugue del jefe:",
-                                min = 12,
-                                max = 112,
                                 value = 20),
                     
                     #Definición de las opciones para el sexo del jefe del hogar
@@ -150,14 +146,10 @@ server <- function(input, output) {
     variables_entrada <- reactive({
         data.frame(
             Caracteristica = c("Número de personas",
-                               "Edad del jefe del hogar",
-                               "Conyugue vive en el hogar",
-                               "Edad del conyugue",
+                               "Edad maxima",
                                "Sexo del jefe del hogar"),
             Valor = c(input$personas,
-                      input$edad_jefe,
-                      input$conyugue_hogar,
-                      input$edad_conyugue,
+                      input$edad_maxima,
                       input$sexo))
         
     })
