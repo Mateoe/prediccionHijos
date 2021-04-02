@@ -182,6 +182,15 @@ BASE_FINAL %>%
 ```
 
 
+```{r}
+# Agregando la base datos_vivienda a BASE_FINAL
+BASE_FINAL <- merge(x = datos_vivienda, y = BASE_FINAL, by = 'DIRECTORIO', all.y = TRUE)
+```
+
+```{r}
+BASE_FILTRADA <- read.csv("BASE_FILTRADA.csv", header = TRUE)
+BASE_FILTRADA <- BASE_FILTRADA[,-1]
+```
 
 # P6040: Edad del jefe de hogar
 
@@ -355,10 +364,271 @@ P10 <- P10 + labs(title = "Frecuencias número de sanitarios en el hogar")+theme
 P10
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 P11 <- ggplot(BASE_FINAL, aes(x=P5000, y=Hijos))
 P11 <- P11 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
 P11 <- P11 + xlab("Número de sanitarios")+ylab("Cantidad de hijos")
 P11 <- P11 + ggtitle("Número de sanitarios en el hogar vs cantidad de hijos")+theme_bw()
 P11
 ```
+
+
+# P5013S1: Cantidad de comidas al día
+
+```{r}
+P12 <- ggplot(subset(BASE_FINAL, !is.na(P5013S1)), aes(x=factor(P5013S1)))
+P12 <- P12 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P12 <- P12 + scale_x_discrete("Comidas al día") + scale_y_continuous("FRECUENCIA")
+P12 <- P12 + labs(title = "Frecuencias número de sanitarios en el hogar")+theme_bw()
+P12
+```
+
+```{r message=FALSE, warning=FALSE}
+P13 <- ggplot(BASE_FINAL, aes(x=P5013S1, y=Hijos))
+P13 <- P13 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P13 <- P13 + xlab("Comidas al día")+ylab("Cantidad de hijos")
+P13 <- P13 + ggtitle("Comidas por día vs cantidad de hijos")+theme_bw()
+P13
+```
+
+# I_HOGAR: Ingreso mensual total del hogar
+
+
+```{r message=FALSE, warning=FALSE}
+P15 <- ggplot(BASE_FINAL, aes(x=I_HOGAR, y=Hijos))
+P15 <- P15 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P15 <- P15 + xlab("Ingreso mensual")+ylab("Cantidad de hijos")
+P15 <- P15 + ggtitle("Ingreso mensual vs cantidad de hijos")+theme_bw()
+P15
+```
+
+# PERCAPITA: Ingreso per capita del hogar
+
+```{r message=FALSE, warning=FALSE}
+P17 <- ggplot(BASE_FINAL, aes(x=PERCAPITA, y=Hijos))
+P17 <- P17 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P17 <- P17 + xlab("Ingreso per capita del hogar")+ylab("Cantidad de hijos")
+P17 <- P17 + ggtitle("Ingreso per capita del hogar vs cantidad de hijos")+theme_bw()
+P17
+```
+
+# I_OU: Ingreso mensual total de la otra unidad de gasto
+
+
+```{r message=FALSE, warning=FALSE}
+P19 <- ggplot(BASE_FINAL, aes(x=I_OU, y=Hijos))
+P19 <- P19 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P19 <- P19 + xlab("Ingreso otra unidad de gasto")+ylab("Cantidad de hijos")
+P19 <- P19 + ggtitle("Ingreso otra unidad de gasto vs cantidad de hijos")+theme_bw()
+P19
+```
+# CANT_PERSONAS_HOGAR: Cantidad de personas en el hogar
+
+```{r}
+P20 <- ggplot(subset(BASE_FINAL, !is.na(CANT_PERSONAS_HOGAR)), aes(x=factor(CANT_PERSONAS_HOGAR)))
+P20 <- P20 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P20 <- P20 + scale_x_discrete("Cantidad de personas en el hogar") + scale_y_continuous("FRECUENCIA")
+P20 <- P20 + labs(title = "Frecuencias número de personas en el hogar")+theme_bw()
+P20
+```
+
+```{r message=FALSE, warning=FALSE}
+P21 <- ggplot(BASE_FINAL, aes(x=CANT_PERSONAS_HOGAR, y=Hijos))
+P21 <- P21 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P21 <- P21 + xlab("Cantidad de personas en el hogar")+ylab("Cantidad de hijos")
+P21 <- P21 + ggtitle("Cantidad de personas en el hogar vs cantidad de hijos")+theme_bw()
+P21
+```
+
+# P5018: Pago por consumo de energía en la ultima factura
+
+
+```{r message=FALSE, warning=FALSE}
+P23 <- ggplot(BASE_FINAL, aes(x=P5018, y=Hijos))
+P23 <- P23 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P23 <- P23 + xlab("Pago por consumo de energía")+ylab("Cantidad de hijos")
+P23 <- P23 + ggtitle("Pago por consumo de energía vs cantidad de hijos")+theme_bw()
+P23
+```
+# P1070: Tipo vivienda
+
+```{r}
+P24 <- ggplot(subset(BASE_FINAL, !is.na(P1070)), aes(x=factor(P1070)))
+P24 <- P24 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P24 <- P24 + scale_x_discrete("Tipo de vivienda") + scale_y_continuous("FRECUENCIA")
+P24 <- P24 + labs(title = " Frecuencias para el tipo de vivienda")+theme_bw()
+P24
+```
+
+```{r message=FALSE, warning=FALSE}
+P25 <- ggplot(BASE_FINAL, aes(x=factor(P1070), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para tipo de vivienda vs cantidad de hijos',subtitle = ' ',caption = ' ',
+       x = 'Tipo de vivienda', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P25
+```
+# P6020: Sexo del jefe de hogar
+
+
+Dos niveles:
+
+* 1. Hombre
+* 2. Mujer 
+
+```{r}
+P26 <- ggplot(subset(BASE_FINAL, !is.na(P6020)), aes(x=factor(P6020)))
+P26 <- P26 + geom_bar(width = 0.8, fill=c("blue","purple"), alpha=0.4, col='black' )
+P26 <- P26 + scale_x_discrete("Sexo del jefe de hogar") + scale_y_continuous("FRECUENCIA")
+P26 <- P26 + labs(title = "Frecuencia de cada sexo en jefes de hogar")+theme_bw()
+P26
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+P27 <- ggplot(BASE_FINAL, aes(x=factor(P6020), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para sexo vs cantidad de hijos',subtitle = ' ',caption = ' ',
+       x = 'Sexo', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P27
+```
+
+# P6071: Conyuge hogar
+
+Dos niveles:
+
+* Sí
+* No
+
+```{r}
+P28 <- ggplot(subset(BASE_FINAL, !is.na(P6071)), aes(x=factor(P6071)))
+P28 <- P28 + geom_bar(width = 0.8, fill=c("blue", "purple"), alpha=0.4, col='black' )
+P28 <- P28 + scale_x_discrete("¿La pareja vive en el hogar?") + scale_y_continuous("FRECUENCIA")
+P28 <- P28 + labs(title = "Frecuencias: casos en que vive en el hogar vs no vive en el hogar")+theme_bw()
+P28
+```
+
+```{r message=FALSE, warning=FALSE}
+P29 <- ggplot(subset(BASE_FINAL, !is.na(P6071)), aes(x=factor(P6071), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = '¿El conyuge vive en el hogar? vs número de hijos',subtitle = ' ',caption = ' ',
+       x = '¿Conyuge vive en el hogar? Si vs no', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P29
+```
+
+# P6127: Estado de salud
+
+```{r}
+P30 <- ggplot(subset(BASE_FINAL, !is.na(P6127)), aes(x=factor(P6127)))
+P30 <- P30 + geom_bar(width = 0.8, fill=c("blue", "purple", "blue","blue"), alpha=0.4, col='black' )
+P30 <- P30 + scale_x_discrete("Estado de salud") + scale_y_continuous("FRECUENCIA")
+P30 <- P30 + labs(title = " Frecuencias para los estados de salud")+theme_bw()
+P30
+```
+
+```{r message=FALSE, warning=FALSE}
+P31 <- ggplot(BASE_FINAL, aes(x=factor(P6127), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para estado de salud vs número de hijos',subtitle = ' ',caption = ' ',
+       x = 'Estado de salud', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P31
+```
+
+# P6100: Regimen de salud
+
+```{r}
+P32 <- ggplot(subset(BASE_FINAL, !is.na(P6100)), aes(x=factor(P6100)))
+P32 <- P32 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P32 <- P32 + scale_x_discrete("Regimen de salud") + scale_y_continuous("FRECUENCIA")
+P32 <- P32 + labs(title = " Frecuencias para el regimen de salud")+theme_bw()
+P32
+```
+
+```{r message=FALSE, warning=FALSE}
+P33 <- ggplot(BASE_FINAL, aes(x=factor(P6100), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para regimen de salud vs hijos en el hogar',subtitle = ' ',caption = ' ',
+       x = 'Regimen de salud', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P33
+```
+
+# Edad_conyuge: Variable construida
+
+```{r}
+h34 <- ggplot(BASE_FILTRADA, aes(x=edad_conyuge))
+h34 <- h34 + geom_histogram(binwidth = 1, col='black', fill='blue', alpha=0.4)
+h34 <- h34 + xlab("Edad del conyuge")+ylab("FRECUENCIA")
+h34 <- h34 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA EDAD DEL CONYUGE")+theme_bw()
+h34
+```
+```{r}
+P35 <- ggplot(BASE_FILTRADA, aes(x=edad_conyuge, y=Hijos))
+P35 <- P35 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P35 <- P35 + geom_vline(xintercept = c(28,65))
+P35 <- P35 + xlab("Edad del conyuge")+ylab("Cantidad de hijos")
+P35 <- P35 + ggtitle("Edad del conyuge vs cantidad de hijos")+theme_bw()
+P35
+```
+
+# Edad_maxima: Variable construida
+
+```{r}
+h36 <- ggplot(BASE_FILTRADA, aes(x=edad_maxima))
+h36 <- h36 + geom_histogram(binwidth = 1, col='black', fill='blue', alpha=0.4)
+h36 <- h36 + xlab("Edad máxima entre el cabeza de hogar y su pareja")+ylab("FRECUENCIA")
+h36 <- h36 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA LA EDAD MAXIMA")+theme_bw()
+h36
+```
+```{r}
+P37 <- ggplot(BASE_FILTRADA, aes(x=edad_maxima, y=Hijos))
+P37 <- P37 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P37 <- P37 + geom_vline(xintercept = c(28,65))
+P37 <- P37 + xlab("Edad maxima")+ylab("Cantidad de hijos")
+P37 <- P37 + ggtitle("Edad maxima vs cantidad de hijos")+theme_bw()
+P37
+```
+# Con_pareja: Variable construida
+
+
+Dos niveles:
+
+* 1. Con pareja que vive en el hogar
+* 2. Sin pareja 
+
+
+```{r}
+P38 <- ggplot(subset(BASE_FILTRADA, !is.na(con_pareja)), aes(x=factor(con_pareja)))
+P38 <- P38 + geom_bar(width = 0.8, fill=c("blue", "purple"), alpha=0.4, col='black' )
+P38 <- P38 + scale_x_discrete("Jefe sólo o con pareja ") + scale_y_continuous("FRECUENCIA")
+P38 <- P38 + labs(title = " Frecuencias para jefes de hogar con pareja en el hogar o sin pareja")+theme_bw()
+P38
+```
+
+```{r message=FALSE, warning=FALSE}
+P39 <- ggplot(BASE_FILTRADA, aes(x=factor(con_pareja), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Estado sentimental vs número de hijos',subtitle = ' ',caption = ' ',
+       x = 'Estado sentimental', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P39
+```
+
+
+
