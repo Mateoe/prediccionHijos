@@ -240,6 +240,8 @@ Se observó entonces que si bien hay variabilidad en el tercer cuartil de alguno
 
 # P6435 Tipo de trabajo
 
+Esta variable cuenta con los siguientes niveles:
+
 * 1: Obrero empresa particular
 * 2: Obrero empresa gubernamental
 * 3: Empleado doméstico
