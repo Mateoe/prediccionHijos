@@ -7,147 +7,265 @@
 #    http://shiny.rstudio.com/
 #
 
+#LEctura de las librerías
 library(shiny)
 library(shinythemes)
 library(dplyr)
 library(DT)
+library(ggplot2)
+library(thematic)
 
-
+#Lectura el conjunto de datos
 datos <- read.csv("../Bases de datos/BASE_FILTRADA(sin_nas).csv")
-datos <- datos %>% select(CANT_PERSONAS_HOGAR,edad_jefe,conyugue_hogar,edad_conyugue,sexo, Hijos)
-colnames(datos) <- c("Personas hogar","Edad jefe","Conyugue hogar","Edad conyugue","sexo", "Hijos")
-# Define UI for application that draws a histogram
 
-ui <- fluidPage(theme = shinytheme("cosmo"),
+#Selección de las varaibles relevantes del conjunto de datos
+datos <- datos %>% select(CANT_PERSONAS_HOGAR,edad_jefe,conyugue_hogar,edad_conyugue,sexo, Hijos)
+
+#Nombrado de las variables del conjunto de datos
+colnames(datos) <- c("Personas hogar","Edad jefe","Conyugue hogar","Edad conyugue","Sexo", "Hijos")
+
+
+#Definición de la interfaz de usuario
+ui <- fluidPage(
+    
+    #Definición del tema de la aplicación
+    theme = shinytheme("cyborg"),
+    
+    #Definición de la barra de navegación
+    navbarPage( 
+        
+        title = "Col Hogares",                            #Titulo de la barra de navegación
+        
+        #Definición de la primera pestaña de la barra de navegación
+        tabPanel(
+            
+            "Descripción",                                #Nombre de la pestaña
+            
+            icon = icon("info-circle"),                   #Icono de la pestaña
+            
+            titlePanel("Descripción de la aplicación")    #Titulo de la pestaña
+            
+        ),
+        
+        
+        #Definición de la primera pestaña de la barra de navegación
+        tabPanel(
+            
+            "Predicción",                                #Nombre de la pestaña
+            
+            icon = icon("chart-line"),                   #Icono de la pestaña
+            
+            titlePanel("Modelo de predicción"),          #Titulo de la pestaña
+            
+            
+            #Definición de la capa de variables y salida de la aplicación
+            sidebarLayout(
                 
-                navbarPage( title = "Col Hogares",
-                            
-                            tabPanel("Descripción", 
-                                     
-                                     titlePanel("Descripción de la aplicación")
-                                     ),
-                            
-                            
-                            tabPanel("Predicción", 
-                                     
-                                     titlePanel("Modelo de predicción"),
-                                     
-                                     # Sidebar with a slider input for number of bins 
-                                     sidebarLayout(
-                                         
-                                         sidebarPanel(
-                                             
-                                             sliderInput("personas",
-                                                         "Número de personas en el hogar:",
-                                                         min = 1,
-                                                         max = 19,
-                                                         value = 3),
-                                             
-                                             sliderInput("edad_jefe",
-                                                         "Edad del jefe de familia:",
-                                                         min = 13,
-                                                         max = 113,
-                                                         value = 20),
-                                             
-                                             radioButtons("conyugue_hogar", 
-                                                          "¿El conyugue vive en el hogar?",
-                                                          c("Si" = 1,
-                                                            "No" = 2
-                                                          )
-                                             ),
-                                             
-                                             sliderInput("edad_conyugue",
-                                                         "Edad del conyugue del jefe:",
-                                                         min = 12,
-                                                         max = 112,
-                                                         value = 20),
-                                             
-                                             radioButtons("sexo", 
-                                                          "Sexo del jefe del hogar:",
-                                                          c("Masculino" = 1,
-                                                            "Femenino" = 2
-                                                            )
-                                                          )
-                                             
-                                             
-                                             
-                                         ),
-                                         
-                                         
-                                         # Show a plot of the generated distribution
-                                         mainPanel(
-                                             
-                                             tableOutput("entradas"),
-                                             
-                                             tabsetPanel(type = "tabs",
-                                                         
-                                                         tabPanel("Gráfico", textOutput("grafico")),
-                                                         
-                                                         tabPanel("Resumen", textOutput("resumen")),
-                                                         
-                                                         tabPanel("Tablas", DTOutput('tabla'))
-                                             )
-                                             
-                                         )
-                                     )
-                                     
-                                     
-                                     
-                                     
-                            )
-                            
-                            
+                #Definición del panel de variables de entrada
+                sidebarPanel(
+                    
+                    #Definición del control desizante para numero de personas
+                    sliderInput("personas",
+                                "Número de personas en el hogar:",
+                                min = 1,
+                                max = 19,
+                                value = 3),
+                    
+                    #Definición del control desizante para la edad del jefe
+                    sliderInput("edad_jefe",
+                                "Edad del jefe de familia:",
+                                min = 13,
+                                max = 113,
+                                value = 20),
+                    
+                    #Definición de las opciones para la convivencia con el conyugue
+                    radioButtons("conyugue_hogar", 
+                                 "¿El conyugue vive en el hogar?",
+                                 c("Si" = 1,
+                                   "No" = 2
+                                 )
+                    ),
+                    
+                    #Definición del control desizante para la edad del conyugue
+                    sliderInput("edad_conyugue",
+                                "Edad del conyugue del jefe:",
+                                min = 12,
+                                max = 112,
+                                value = 20),
+                    
+                    #Definición de las opciones para el sexo del jefe del hogar
+                    radioButtons("sexo", 
+                                 "Sexo del jefe del hogar:",
+                                 c("Masculino" = 1,
+                                   "Femenino" = 2
+                                 )
+                    )
+                    
+                    
+                    
+                ),
+                
+                
+                #Definición del panel de variables de salida
+                mainPanel(
+                    
+                    #Definición del panel que refleja las variables de entrada
+                    tableOutput("entradas"),
+                    
+                    #Definición del panel de pestañas de la variable de salida
+                    tabsetPanel(
+                        
+                        #Tipo de panel
+                        type = "tabs",
+                        
+                        #Definición de la pestaña del gráfico de distribución
+                        tabPanel("Distribución de la cantidad de hijos", 
+                                 plotOutput('distribucion'), 
+                                 icon = icon("bar-chart-o")),
+                        
+                        #Definición de la pestaña de la tabla de frecuencias
+                        tabPanel("Tabla de frecuencias", 
+                                 dataTableOutput("frecuencias"),
+                                 icon = icon("table")),
+                        
+                        #Definición de la pestaña de la base de datos
+                        tabPanel("Base de datos", 
+                                 div(dataTableOutput('bd'), style = "font-size:85%"), 
+                                 icon = icon("database")
+                        )
+                    )
                 )
-                
-                
-                
+            )
+        )
+    )
 )
 
-# Define server logic required to draw a histogram
+
+
+
+# Definción de la funcionalidad lógica de la aplicación (servidor)
 server <- function(input, output) {
-
-    #output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        #x    <- faithful[, 2]
-        #bins <- seq(min(x), max(x), length.out = input$personas + 1)
-
-        # draw the histogram with the specified number of bins
-        #hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    #})
     
-    sliderValues <- reactive({
-        
+    #Creación del dataframe de varaibles de entrada
+    variables_entrada <- reactive({
         data.frame(
             Caracteristica = c("Número de personas",
-                     "Edad del jefe del hogar",
-                     "Conyugue vive en el hogar",
-                     "Edad del conyugue",
-                     "Sexo del jefe del hogar"),
+                               "Edad del jefe del hogar",
+                               "Conyugue vive en el hogar",
+                               "Edad del conyugue",
+                               "Sexo del jefe del hogar"),
             Valor = c(input$personas,
-                                   input$edad_jefe,
-                                   input$conyugue_hogar,
-                                   input$edad_conyugue,
-                                   input$sexo))
+                      input$edad_jefe,
+                      input$conyugue_hogar,
+                      input$edad_conyugue,
+                      input$sexo))
         
     })
     
+    #Variable de salida que refleja las variables de entrada
     output$entradas <- renderTable({
-        sliderValues()
+        variables_entrada()
     })
     
-    output$hijos <- renderText(input$personas)
-    output$grafico <- renderText("Aquí va el gráfico")
-    output$resumen <- renderText("Aquí van los resumenes")
-    output$tabla <- renderDT(datos,
-                             filter = "top",
-                             options = list(
-                                 sDom  = '<"top">lrt<"bottom">ip'
-                             )
+    #Variable de salida que contiene el gráfico de la distribución de la cantidad de hijos
+    output$distribucion <- renderPlot({
+        
+        #Creación del gráfico de la distribución de los hijos
+        ggplot(datos, aes(x = Hijos)) +
+            
+            #Definición del gráfico como histograma
+            geom_histogram(bins = 30, ) +
+            
+            #Definición del titulo del histograma
+            ggtitle("Frecuencia de la cantidad de hijos")+
+            
+            #Configuración del tema del gráfico
+            theme(plot.title = element_text(hjust = 0.5),
+                  text = element_text(size=14),
+                  plot.caption = element_text(hjust = 0, 
+                                              size = 12, 
+                                              colour="orange"))+
+            
+            #Definición de los textos del gráfico
+            labs(
+                y = "Frecuencia",
+                caption = "En los hogares colombianos lo mas frecuente no tener hijos o tener de uno a tres hijos")+
+            
+            #Definición de la escala del gráfico en el eje x
+            scale_x_continuous(breaks = unique(datos$Hijos))
+        
+        
+    })
+    
+    
+    #Variable de salida que contiene la tabla de frecuencias de la cantidad de hijos
+    output$frecuencias <- renderDataTable({
+        
+        #Creación de las frecuencias absolutas
+        tabla <- table(as.factor(datos$Hijos))
+        
+        #Conversión de las frecuencias absolutas a dataframe
+        frecuencias <- as.data.frame(tabla)
+        
+        #Creación de las frecuencias absolutas acumuladas
+        frecuencias$acum <- cumsum(frecuencias$Freq)
+        
+        #Creación de las frecuencias relativas
+        frecuencias$frecRel <- lapply(frecuencias$Freq, 
+                                      function(x){
+                                          round(
+                                              x/max(frecuencias$acum),
+                                              digits = 5)
+                                          })
+        
+        #Creación de las frecuencias relativas acumuladas
+        frecuencias$relAcum <- cumsum(frecuencias$frecRel)
+        
+        #Eliiminación de la notación cientifica
+        options(scipen=999)
+        
+        #Renombrado de los nombres de las columnas de la tabla de frecuencias
+        colnames(frecuencias) <- c("Hjos", 
+                                   "Frecuencia", 
+                                   "Frecuencia acumulada", 
+                                   "Frecuencia relativa", 
+                                   "Frecuencia relativa acumulada")
+        
+        #Retorno la tabla de frecuencias para ser añadida a la variable de salida
+        return(frecuencias)},
+        
+        #Eliminación del indice de la tabla
+        rownames = FALSE,
+        #Adaptación de la tabla al estilo de la aplicación
+        style = "bootstrap4",
+        #Control de opciones de la tabla para ser mostrada de forma simple
+        options = list(lengthChange = FALSE, pageLength = 15, dom = "t"),
     )
     
     
-    #output$tabla <- renderText("Aquí van las tablas")
+    #Variable de salida que contiene la tabla de la base de datos
+    output$bd <- renderDT(
+        
+        #Conjunto de datos utilizado
+        datos,
+        
+        #Se establecen los filtros de la parte superior
+        filter = "top",
+        
+        #Control de opciones de la tabla para eliminar el filtro y control de filas
+        options = list(
+            sDom  = '<"top">lrt<"bottom">ip',
+            lengthChange = FALSE
+        ),
+        #Adaptación de la tabla al estilo de la aplicación
+        style = "bootstrap4"
+    )
+    
 }
 
-# Run the application 
+
+#Configuración tematica de los gráficos al estilo de la aplicación
+thematic_shiny()
+
+#Definición de la aplicación
 shinyApp(ui = ui, server = server)
