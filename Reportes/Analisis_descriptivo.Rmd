@@ -399,6 +399,8 @@ P21
 
 # P5018: Pago por consumo de energía en la ultima factura
 
+ESTE ES EL MENSAJE DE PRUEBA DEL JUANFER
+
 ```{r message=FALSE, warning=FALSE}
 P23 <- ggplot(BASE_FINAL, aes(x=P5018, y=Hijos))
 P23 <- P23 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)

@@ -24,4 +24,7 @@ test <- test[,-c(1)]
 #require(neuralnet)
 #
 #nn = neuralnet(Placed~TKS+CSS, data = df, hidden = 3, act.fct = "logistic", linear.output = FALSE)
+require(randomForest)
 
+Modelo.rf = randomForest(medv ~ . , data = Boston , subset = train)
+Boston.rf
