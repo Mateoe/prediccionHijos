@@ -1,8 +1,11 @@
 ---
 title: "Creación base de datos"
-author: "Alejandro Bedoya Cataño"
-date: "26/3/2021"
-output: html_document
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry"
+date: "Abril 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
@@ -12,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Carga de librerías
 
+Se hará uso de las siguientes librerías para el analisis de los datos:
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(dplyr)
@@ -20,10 +24,11 @@ library(dplyr)
 
 # Carga de las bases de datos
 
-Bases de datos que contienen las variables 'definitivas' a utilizar.
+Procederemos a cargar las bases de datos que contienen las variables a utilizar y que ayudarán a crear algunas nuevas variables:
 
 ```{r}
-#setwd()  #Pa que definan la ruta de su directorio
+#setwd()  #Para definir la ruta de su directorio
+# Los datos vienen en formativo csv con sus columnas separadas por ";"
 educacion <- read.csv("Educación.csv",sep = ";", dec = ",")
 fuerza_trabajo <- read.csv("Fuerza de trabajo.csv", sep = ";", dec = ",")
 compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv", sep=";", dec=",")
@@ -34,6 +39,8 @@ salud <- read.csv('Salud.csv', sep = ';', dec = ",")
 ```
 
 **Renombrando los directorios:**
+
+Al cargar las bases de datos, se observa que el nombre de la primera columna tiene una pequeña variación en su nombre y para una mejor manipulación de los datos, lo arreglaremos en todas estas bases.
 
 ```{r}
 colnames(compo_hogar)[1] <- "DIRECTORIO"
@@ -47,71 +54,89 @@ colnames(salud)[1] <- 'DIRECTORIO'
 
 # Creación identificador único: clave
 
+Como en los registros de todas las bases de datos la variable *DIRECTORIO* no describe únicamente a una única familia en la vivienda, se decide crear una variable que llamaremos *clave*, juntando las variables *DIRECTORIO* y *SECUENCIA_P* pues esta última ayuda a definir a las distintas familias dentro de una vivienda.
+
 ```{r}
+# Definicion de clave para Como_hogar
 compo_hogar$clave <- paste0(compo_hogar$DIRECTORIO, compo_hogar$SECUENCIA_P)
+# Definicion de clave para educacion 
 educacion$clave <- paste0(educacion$DIRECTORIO, educacion$SECUENCIA_P)
+# Definicion de clave para fuerza_trabajo 
 fuerza_trabajo$clave <- paste0(fuerza_trabajo$DIRECTORIO, fuerza_trabajo$SECUENCIA_P)
+# Definicion de clave para datos_vivienda 
 datos_vivienda$clave <- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENCIA_P)
+# Definicion de clave para salud 
 salud$clave <- paste0(salud$DIRECTORIO, salud$SECUENCIA_P)
 ```
 
-Intercambio de nombres para la base de datos servicios hogar
+## correccion de anomalías
 
+Cuando analizamos los registros de *"servi_hogar"* y *"uso_energetico"* comparados con los de las demás bases de datos, se observa que en las columnas *ORDEN* y *SECUENCIA_P* los registros difieren en su comportamiento de las demás bases, por lo cual, al intentar arreglar dicho error se concluyó que ambas columnas estaban invertidas. Esto se arregló como sigue: 
+ 
 ```{r}
+# Para invertir ORDEN Y SECUENCIA_P en servi_hogar 
 colnames(servi_hogar)[3] <- 'ORDEN'
 colnames(servi_hogar)[4] <- 'SECUENCIA_P'
+# Para invertir ORDEN Y SECUENCIA_P en uso_energetico 
 colnames(uso_energetico)[3] <- 'ORDEN'
 colnames(uso_energetico)[4] <- 'SECUENCIA_P'
+# Definicion de clave para servi_hogar
 servi_hogar$clave <- paste0(servi_hogar$DIRECTORIO, servi_hogar$SECUENCIA_P)
+# Definicion de clave para uso_energetico
 uso_energetico$clave <- paste0(uso_energetico$DIRECTORIO, uso_energetico$SECUENCIA_P)
 ```
 
-
-
 # Calculo del total de hijos para cada hogar
 
-```{r}
-#Se seleccionan las columnas directorio y P6051
+Para obtener la variable respuesta (planteada para el desarrollo de nuestro proyecto), que es el número total de hijos por hogar, gracias al diccionario de las variables en la pagina "http://microdatos.dane.gov.co/index.php/catalog/678/data_dictionary#page=F133&tab=data-dictionary", se pudo descifrar su construcción  a partir de la variable *P6051* de la base de datos que llamamos *"compo_hogar"*, donde los registros que tienen un *3* en esta variable que define el parentesco con el jefe del hogar, son individualmente los hijos que viven en el hogar y como tal la suma por hogar (definidos por la variable *clave*), de estos registros, nos dará el numero total de hijos en este.
 
+```{r}
+# Se seleccionan las columnas DIRECTORIO y P6051
 clave_P6051 <- compo_hogar %>% dplyr::select(clave, P6051)
-#Se cuentan el numero de hijos por hogar
+# Se obtiene el numero de hijos por hogar (contando las filas que tienen un 3)
 hijos_hogar <- clave_P6051 %>% filter(P6051 == 3) %>% count(clave)
+# A la cantidad de hijos por hogar la llamaremos Hijos
 colnames(hijos_hogar)[2] <- "Hijos"
-nrow(hijos_hogar)
+nrow(hijos_hogar) # Se observa el numero total de hogares con hijos
 ```
 
-
+Y como en lo anterior se cuenta solo con los hogares que tienen hijos, para obtener todos los hogares dentro de los datos, se filtrará la base de datos por los jefes de hogar y así definir en cada uno de estos hogares la cantidad de hijos.
 
 ```{r}
-#Se filtra el parentezco dejando solo a los jefes de hogar
+# Se filtra el parentesco dejando solo a los jefes de hogar
 jefe_hogar <- compo_hogar %>% filter(P6051 == 1)
 
-#Se asocian los hijos a cada jefe de hogar
+# Se asocia la cantidad de hijos a cada jefe de hogar
 hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "clave", all.x = TRUE)
 
-#A los jefe de hogar sin hijos se les establecen cero hijos
+# El jefe de hogar que no tenga asociado ningun hijo se les establece la variable Hijos en cero
 hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
 
-nrow(hijos_hogar)
-nrow(hijos_jefe)
+nrow(hijos_hogar) # Se observa el numero total de hogares con hijos
+nrow(hijos_jefe) # Se observa el numero total de hogares
 ```
-
 
 # Filtración - cabezas de familia 
 
-Se reducirá cada base de datos inicial a sólo los registros que consideren 
+Como *"compo_hogar"*, de donde se obtuvo la variable respuesta, se decidió trabajar únicamente con los registros de los jefes de hogar, se reducirá cada una de las bases de datos consideradas a sólo los registros perteneciente a los jefes de hogar usando la variable *ORDEN* pues se observó en los registros que la primera respuesta en cada hogar representa al jefe del hogar.
 
 ```{r}
+# Obteniendo las respuestas de los jefes de hogar en educacion
 educacion %>% 
   filter(ORDEN==1) -> edu_filtrada; nrow(edu_filtrada)
+# Obteniendo las respuestas de los jefes de hogar en fuerza_trabajo
 fuerza_trabajo %>% 
   filter(ORDEN==1) -> fuerza_trabajo_filtrada; nrow(fuerza_trabajo_filtrada)
+# Obteniendo las respuestas de los jefes de hogar en compo_hogar
 compo_hogar %>% 
   filter(ORDEN==1) -> compo_hogar_filtrada; nrow (compo_hogar_filtrada)
+# Obteniendo las respuestas de los jefes de hogar en uso_energetico
 uso_energetico %>% 
   filter(ORDEN==1) -> uso_energetico_filtrada; nrow(uso_energetico_filtrada)
+# Obteniendo las respuestas de los jefes de hogar en servi_hogar
 servi_hogar %>%
   filter(ORDEN==1) -> servi_hogar_filtrada; nrow(servi_hogar_filtrada)
+# Obteniendo las respuestas de los jefes de hogar en salud
 salud %>% 
   filter(ORDEN==1) -> salud_filtrada; nrow(salud_filtrada)
 ```
@@ -119,174 +144,181 @@ salud %>%
 
 # Union de todas las bases 
 
+Como anteriormente se definió una variable que compartirían todas las bases de datos (lo que llamamos *clave*), usaremos esta para concatenar los registros de las bases de datos para cada uno de los hogares y crear una base final con los datos completos de los hogares.
+
 ```{r}
+# Con ayuda de la funcion merge se juntan las bases de datos.
 BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe,
                                                                     edu_filtrada,
                                                                 fuerza_trabajo_filtrada,
                                                                 servi_hogar_filtrada,
                                                                 uso_energetico_filtrada,
                                                                 salud_filtrada))
+# Se coloca la variable Hijos despues DIRECTORIO
 BASE_FINAL %>% 
   relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
 ```
 
+Como *"datos_vivienda"* solo cuenta con los datos proporcionados por el jefe del hogar, no se tuvo que realizar cambios en sus estructura.
 
 ```{r}
+# Agregando la base datos_vivienda a BASE_FINAL
 BASE_FINAL <- merge(x = datos_vivienda, y = BASE_FINAL, by = 'DIRECTORIO', all.y = TRUE)
 ```
 
 
 # Filtro de variables y adición de nuevas
 
-Se filtra para tener únicamente las variables pre analizadas y elegidas
+Se filtra *"BASE_FINAL"* para tener únicamente las variables pre-analizadas y elegidas como variables propuestas para el modelo de prediccion del numero de hijos.
 
 ```{r}
-variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P8586','P6435',
+# Vector con la seleccion de las variables
+variables_definitivas <- c('DIRECTORIO','clave.x','Hijos','P8587','P6435',
                            'P5000','P5024','P5502','P5013S1','I_HOGAR','PERCAPITA',
-                           'I_OU','CANT_PERSONAS_HOGAR', 'P5018',
-                           'P1070','P6020', 'P6071','P6040', 'P6127', "P6100")
-
+                           'CANT_PERSONAS_HOGAR', 'P5018',
+                           'P1070','P6020','P6040', 'P6127')
 ```
 
 
 ```{r}
-#creando Edad conyugue
-compo_hogar %>% 
-  filter(P6051==2) %>% 
-  dplyr::select(clave,P6040) -> edad_conyugue 
-colnames(edad_conyugue)[2] <- 'edad_conyugue'
-```
-
-```{r}
-#creando Edad máxima entre los padres
+# Obteniendo la Edad máxima entre los padres
 ed_max <- compo_hogar %>% filter(P6051==1 | P6051==2) %>% group_by(clave) %>% mutate(edad_maxima=max(P6040)) %>% select(clave, edad_maxima, P6051)
 ed_max<- ed_max %>% filter(P6051==1) %>% select(clave, edad_maxima)
 ```
 
 ```{r}
-#creando El cabeza de hogar vive con pareja? 1.Si y 2.No
+# Creando El cabeza de hogar vive con pareja? 1.Si y 2.No
 pareja<- compo_hogar %>% filter(P6051==1) %>% select(clave, P6071)
 pareja$P6071[is.na(pareja$P6071)]<-2
 colnames(pareja)[2]<-"con_pareja"
 ```
 
 ```{r}
+# Se filtra la base de datos con las variables propuestas para el modelo
 BASE_FINAL %>% 
   dplyr::select(all_of(variables_definitivas)) -> BASE_FILTRADA 
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
+# Se renombra la variable clave, pues al concatenar tenia una variacion
 colnames(BASE_FILTRADA)[2] <- 'clave' 
-#BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = edad_conyugue, all.x = TRUE, by = 'clave')
-#BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = ed_max, all.x = TRUE)
-#BASE_FILTRADA <- merge(x = BASE_FILTRADA, y = pareja, all.x = TRUE, by = 'clave')
-#BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
-#BASE_FILTRADA$edad_maxima[is.na(BASE_FILTRADA$edad_maxima)] <- BASE_FILTRADA$P6040
-#BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- BASE_FILTRADA$P6071
+# Se incluyen las nuevas variables creadas a la base de datos
 BASE_FILTRADA <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(BASE_FILTRADA,
-                                                                       edad_conyugue,
                                                                        ed_max,
                                                                        pareja))
-BASE_FILTRADA$edad_conyugue[is.na(BASE_FILTRADA$edad_conyugue)] <- 0
+# Los hogares que hayan quedado con NA's en edad_maxima tendran el dato de la columna P6040
 BASE_FILTRADA$edad_maxima[is.na(BASE_FILTRADA$edad_maxima)] <- BASE_FILTRADA$P6040
-BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- BASE_FILTRADA$P6071
+# Los hogares que hayan quedado con NA's en con_pareja tendran el dato de la columna P6071
+BASE_FILTRADA$con_pareja[is.na(BASE_FILTRADA$con_pareja)] <- 1
 ```
 
-
-
-# Creación del archivo - BASE_FINAL.csv
+# Exportación de las bases de datos
 
 ```{r}
-write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
+# Guardamos la base final con todas las variables de cada hogar
+#write.csv(BASE_FINAL, file = 'BASE_FINAL.csv')
 ```
 
-
 ```{r}
+# Guardamos la base final con las variables propuestas para el modelo de cada hogar
 write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA.csv')
 ```
 
 **OJOOO: CORRER SOLO UNA VEZ, YO VERÉ**
 
 ```{r}
-BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO))
-nombres <- c("Hijos","nivel_edu","estu_actual","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","I_OU","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","conyugue_hogar","edad_jefe","estado_salud","regimen_salud","edad_conyugue","edad_maxima","con_pareja")
-length(nombres)
-colnames(BASE_FILTRADA) <- nombres
-colnames(BASE_FILTRADA)
+# Eliminamos clave y DIRECTORIO pues no se usaran dentro del modelo
+BASE_FILTRADA <- subset(BASE_FILTRADA, select = -c(clave, DIRECTORIO, P6040))
+# Se renombran las variables que quedaron finalmente
+nombres <- c("Hijos","nivel_edu","tipo_trabajo","num_cuartos","num_sanitarios","estado_civil","comidas_dia","I_HOGAR","PERCAPITA","CANT_PERSONAS_HOGAR", "consumo_energia","tipo_vivienda","sexo","estado_salud","edad_maxima","con_pareja")
+length(nombres) # Obteniendo la cantidad de variables
+# Se renombran dentro de BASE_FILTRADA las variables que quedaron finalmente para mejor manipulacion
+colnames(BASE_FILTRADA) <- nombres 
+colnames(BASE_FILTRADA) 
 ```
 
 # Dealing with NA's
 
-A continuación se presenta la etapa de preprocesamiento para los NA's a portas de la partición en subconjuntos. 
+A continuación se presenta la etapa de preprocesamiento para los NA's de la base filtrata por las variables finales a portas de la partición en subconjuntos. 
 
 **Inputación a categorías no sabe/ no responde**
 
 ```{r}
-#A conyugues sin edad, pongale la edad del jefe
-BASE_FILTRADA$edad_conyugue[BASE_FILTRADA$edad_conyugue==0] <- BASE_FILTRADA$edad_jefe[BASE_FILTRADA$edad_conyugue==0]
-# NA's en regimen salud cree la categoría 0
-BASE_FILTRADA$regimen_salud[is.na(BASE_FILTRADA$regimen_salud)] <- 9
-# NA's en si el conyugue vive en el hogar, cree la categoría 0
-BASE_FILTRADA$conyugue_hogar[is.na(BASE_FILTRADA$conyugue_hogar)] <- 0
-# NA's en tipo de trabajo
+# NA's en tipo de trabajo se les agrega a la categoría 0
 BASE_FILTRADA$tipo_trabajo[is.na(BASE_FILTRADA$tipo_trabajo)] <- 0
-
-sum(is.na(BASE_FILTRADA$edad_conyugue))
-sum(is.na(BASE_FILTRADA$regimen_salud))
-sum(is.na(BASE_FILTRADA$conyugue_hogar))
+# Se observa si quedó algun NA dentro de las variables
 sum(is.na(BASE_FILTRADA$tipo_trabajo))
 ```
 
 ```{r message=FALSE, warning=FALSE}
+# Librería para crear la particion de los datos en entrenamiento y prueba
 library(caret)
 ```
 
+**veamos ahora como tratar los NA's en comidas_dia**
+
 ```{r}
-####### veamos ahora como llenar comidas dia
+####### 
+# Observamos la estructura de comidas_dia
 summary(as.factor(BASE_FILTRADA$comidas_dia))
+# Se obtiene el prodemio de comidas_dia para usarse como reemplazo de los NA's
 mean(na.omit(BASE_FILTRADA$comidas_dia)) 
+# Se sacan los datos con NA's en comidas_dia
 nas_comidas <- which(is.na(BASE_FILTRADA$comidas_dia))
+# Colocamos una semilla para obter siempre la misma aleatorizacion de los datos
 set.seed(123)
+# Se crea una particion de los datos 
 particion <- createDataPartition(nas_comidas, p=0.5, list = FALSE)
+# Se definen los datos de cada particion
 nas_comidas1 <- nas_comidas[particion]
 nas_comidas2 <- nas_comidas[-particion]
+# A una mitad de los NA's se le asigna un 3 en comidas_dia y a la otra mitad un 2
 BASE_FILTRADA$comidas_dia[nas_comidas1] <- 3
 BASE_FILTRADA$comidas_dia[nas_comidas2] <- 2
+# Se observa como cambió la estructura de comidas_dia
 summary(as.factor(BASE_FILTRADA$comidas_dia)) #Lista la comida
+# Se comprueba de que no quedaron NA's
 sum(is.na(BASE_FILTRADA$comidas_dia))
 ```
 
-Anteriores 585
+**Veamos como tratar los NA's en las variables númericas**
 
 ```{r}
+# Se observa la cantidad de NA's en cada variable numerica
 sum(is.na(BASE_FILTRADA$I_HOGAR))
 sum(is.na(BASE_FILTRADA$num_cuartos))
 sum(is.na(BASE_FILTRADA$PERCAPITA))
-sum(is.na(BASE_FILTRADA$I_OU))
 sum(is.na(BASE_FILTRADA$CANT_PERSONAS_HOGAR))
-
+# Se observa la cantidad de NA's entre todas las variables numericas
 sum(is.na(BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos & 
             BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$num_cuartos &
             BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$PERCAPITA &
-            BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$I_OU &
             BASE_FILTRADA$I_HOGAR==BASE_FILTRADA$CANT_PERSONAS_HOGAR))
+# Se obtiene las observaciones con NA's
 nas_833 <- which(is.na(BASE_FILTRADA$I_HOGAR))
+# Se eliminan de BASE_FILTRADA las observaciones con NA's
 BASE_FILTRADA <- BASE_FILTRADA[-nas_833,]
-sum(is.na(BASE_FILTRADA$I_HOGAR))
+sum(is.na(BASE_FILTRADA$I_HOGAR)) 
 ```
 
-Para consumo de energía
+**Veamos como tratar los NA's en consumo_energia**
 
 ```{r}
+# Se calcula la cantidad de NA's en consumo_energia
 sum(is.na(BASE_FILTRADA$consumo_energia))
+# Observamos la estructura de consumo_energia
 summary(BASE_FILTRADA$consumo_energia)
+# Se obtiene las observaciones con NA's
 nas_energia <- which(is.na(BASE_FILTRADA$consumo_energia))
+# Se obtiene el prodemio de consumo_energia para usarse como reemplazo de los NA's
 median(na.omit(BASE_FILTRADA$consumo_energia))
+# Reemplazo de los NA's por la media de los datos
 BASE_FILTRADA$consumo_energia[nas_energia] <- median(na.omit(BASE_FILTRADA$consumo_energia))
+# Se verifica que no hayan quedado NA's en la variable
 sum(is.na(BASE_FILTRADA$consumo_energia))
 ```
 
-Las "no tienen"
+**Las "no tienen"**
 
 ```{r}
 # NA's estado civil no tiene
@@ -295,108 +327,78 @@ sum(is.na(BASE_FILTRADA$estado_civil))
 sum(is.na(BASE_FILTRADA$tipo_vivienda))
 # NA'S sexo
 sum(is.na(BASE_FILTRADA$sexo))
-# NA'S conyugue hogar
-sum(is.na(BASE_FILTRADA$conyugue_hogar))
 # NA'S estado salud
 sum(is.na(BASE_FILTRADA$estado_salud))
-# NA'S regimen salud
-sum(is.na(BASE_FILTRADA$regimen_salud))
 ```
 
-Número de sanitarios
+**Número de sanitarios**
 
 ```{r}
-# NA'S num_sanitarios
+# Cantidad de NA'S en num_sanitarios
 sum(is.na(BASE_FILTRADA$num_sanitarios))
+# Observamos la estructura de num_sanitarios
 summary(as.factor(BASE_FILTRADA$num_sanitarios))
-
+# Se deja en 1 los NA's
 BASE_FILTRADA$num_sanitarios[is.na(BASE_FILTRADA$num_sanitarios)] <- 1
+# Se verifica que no hayan quedado NA's en la variable
 sum(is.na(BASE_FILTRADA$num_sanitarios))
 ```
 
-Nivel educativo maximo
+**Nivel educativo maximo**
 
 ```{r}
-#NA'S nivel_educativa
+# NA's en nivel_educativa
 sum(is.na(BASE_FILTRADA$nivel_edu))
+# Observamos la estructura de nivel_edu
 summary(as.factor(BASE_FILTRADA$nivel_edu))
+# Se cambian los NA's por la moda
 BASE_FILTRADA$nivel_edu[is.na(BASE_FILTRADA$nivel_edu)] <- 3 #moda
+# Se verifica que no hayan quedado NA's en la variable
 sum(is.na(BASE_FILTRADA$nivel_edu))
 ```
 
 ```{r}
+# Observamos la estructura final de BASE_FILTRADA
 summary(BASE_FILTRADA)
 ```
 
 ```{r}
+# Guardamos los datos sin NA's
 write.csv(BASE_FILTRADA, file = 'BASE_FILTRADA(sin_nas).csv')
 ```
 
 # Particion entrenamiento y prueba
 
+Se realizará una partición de BASE_FILTRADA con los datos imputados en proporciones 70-30 para entrenamiento y prueba respectivamente.
+
 ```{r message=FALSE, warning=FALSE}
+# Colocamos una semilla para obtener la misma aleatorizacion
 set.seed(123)
-library(caret)
+# Obtenemos las observaciones para el conjunto de entrenamiento
 inTrain <- createDataPartition(y=BASE_FILTRADA$Hijos, p=0.70, list = FALSE)
+# Sacamos la base de datos para entrenamiento
 train <- BASE_FILTRADA[inTrain,]
+# Sacamos la base de datos para prueba
 test <- BASE_FILTRADA[-inTrain,]
+# Dimensiones de ambos los conjuntos de datos
 dim(train)
 dim(test)
 ```
 
-# Renombrando las variables en las bases de datos
+# Conjuntos de entrenamiento y prueba
+
+Observemos para variables que quedaron en cada conjunto:
 
 ```{r}
+# Se sacan las variables que tienen ambos conjuntos de datos
 names(train)
 names(test)
 ```
 
+Se guardan los conjuntos de datos para su posterior aplicación en los modelos predictivos
 
 ```{r}
+# Guardamos ambos conjuntos de datos en formato csv
 write.csv(train, file = 'train.csv')
 write.csv(test, file = 'test.csv')
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,546 @@
+---
+title: 'Col Hogares: Análisis descriptivo'
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry"
+date: "Marzo, 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de librerías
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r include=FALSE}
+theme_elegante <- function(base_size = 10,
+                           base_family = "Raleway"
+)
+{
+        color.background = "#FFFFFF" # Chart Background
+        color.grid.major = "#D9D9D9" # Chart Gridlines
+        color.axis.text = "#666666" # 
+        color.axis.title = "#666666" # 
+        color.title = "#666666"
+        color.subtitle = "#666666"
+        strip.background.color = '#9999CC'
+        
+        ret <-
+                theme_bw(base_size=base_size) +
+                
+                # Set the entire chart region to a light gray color
+                theme(panel.background=element_rect(fill=color.background, color=color.background)) +
+                theme(plot.background=element_rect(fill=color.background, color=color.background)) +
+                theme(panel.border=element_rect(color=color.background)) +
+                
+                # Format the grid
+                theme(panel.grid.major=element_line(color=color.grid.major,size=.55, linetype="dotted")) +
+                theme(panel.grid.minor=element_line(color=color.grid.major,size=.55, linetype="dotted")) +
+                theme(axis.ticks=element_blank()) +
+                
+                # Format the legend, but hide by default
+                theme(legend.position="none") +
+                theme(legend.background = element_rect(fill=color.background)) +
+                theme(legend.text = element_text(size=base_size-3,color=color.axis.title, family = base_family)) +
+                
+                theme(strip.text.x = element_text(size=base_size,color=color.background, family = base_family)) +
+                theme(strip.text.y = element_text(size=base_size,color=color.background, family = base_family)) +
+                #theme(strip.background = element_rect(fill=strip.background.color, linetype="blank")) +
+                theme(strip.background = element_rect(fill = "grey70", colour = NA)) +
+                # theme(panel.border= element_rect(fill = NA, colour = "grey70", size = rel(1)))+
+                # Set title and axis labels, and format these and tick marks
+                theme(plot.title=element_text(color=color.title, 
+                                              size=20, 
+                                              vjust=1.25, 
+                                              family=base_family, 
+                                              hjust = 0.5
+                )) +
+                
+                theme(plot.subtitle=element_text(color=color.subtitle, size=base_size+2, family = base_family,  hjust = 0.5))  +
+                
+                theme(axis.text.x=element_text(size=base_size,color=color.axis.text, family = base_family)) +
+                theme(axis.text.y=element_text(size=base_size,color=color.axis.text, family = base_family)) +
+                theme(text=element_text(size=base_size, color=color.axis.text, family = base_family)) +
+                
+                theme(axis.title.x=element_text(size=base_size+2,color=color.axis.title, vjust=0, family = base_family)) +
+                theme(axis.title.y=element_text(size=base_size+2,color=color.axis.title, vjust=1.25, family = base_family)) +
+                theme(plot.caption=element_text(size=base_size-2,color=color.axis.title, vjust=1.25, family = base_family)) +
+                
+                # Legend  
+                theme(legend.text=element_text(size=base_size,color=color.axis.text, family = base_family)) +
+                theme(legend.title=element_text(size=base_size,color=color.axis.text, family = base_family)) +
+                theme(legend.key=element_rect(colour = color.background, fill = color.background)) +
+                theme(legend.position="bottom", 
+                      legend.box = "horizontal", 
+                      legend.title = element_blank(),
+                      legend.key.width = unit(.75, "cm"),
+                      legend.key.height = unit(.75, "cm"),
+                      legend.spacing.x = unit(.25, 'cm'),
+                      legend.spacing.y = unit(.25, 'cm'),
+                      legend.margin = margin(t=0, r=0, b=0, l=0, unit="cm")) +
+                
+                # Plot margins
+                theme(plot.margin = unit(c(.5, .5, .5, .5), "cm"))
+        
+        ret
+}
+```
+
+```{r include=FALSE}
+#setwd()  #Pa que definan la ruta de su directorio
+educacion <- read.csv("Educación.csv",sep = ";", dec = ",")
+fuerza_trabajo <- read.csv("Fuerza de trabajo.csv", sep = ";", dec = ",")
+compo_hogar <- read.csv("Caracteristicas y composicion del hogar.csv", sep=";", dec=",")
+datos_vivienda <- read.csv('Datos de la vivienda.csv', sep = ";", dec = ",")
+uso_energetico <- read.csv('Uso de energéticos del hogar.csv', sep=";", dec = ",")
+servi_hogar <- read.csv('Servicios del hogar.csv', sep = ";", dec = ",")
+salud <- read.csv('Salud.csv', sep = ';', dec = ",")
+```
+
+```{r include=FALSE}
+colnames(compo_hogar)[1] <- "DIRECTORIO"
+colnames(educacion)[1] <- "DIRECTORIO"
+colnames(fuerza_trabajo)[1] <- "DIRECTORIO"
+colnames(datos_vivienda)[1] <- "DIRECTORIO"
+colnames(uso_energetico)[1] <- "DIRECTORIO"
+colnames(servi_hogar)[1] <- 'DIRECTORIO'
+colnames(salud)[1] <- 'DIRECTORIO'
+```
+
+
+```{r include=FALSE}
+compo_hogar$clave <- paste0(compo_hogar$DIRECTORIO, compo_hogar$SECUENCIA_P)
+educacion$clave <- paste0(educacion$DIRECTORIO, educacion$SECUENCIA_P)
+fuerza_trabajo$clave <- paste0(fuerza_trabajo$DIRECTORIO, fuerza_trabajo$SECUENCIA_P)
+datos_vivienda$clave <- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENCIA_P)
+salud$clave <- paste0(salud$DIRECTORIO, salud$SECUENCIA_P)
+```
+
+Intercambio de nombres para la base de datos servicios hogar
+
+```{r include=FALSE}
+colnames(servi_hogar)[3] <- 'ORDEN'
+colnames(servi_hogar)[4] <- 'SECUENCIA_P'
+colnames(uso_energetico)[3] <- 'ORDEN'
+colnames(uso_energetico)[4] <- 'SECUENCIA_P'
+servi_hogar$clave <- paste0(servi_hogar$DIRECTORIO, servi_hogar$SECUENCIA_P)
+uso_energetico$clave <- paste0(uso_energetico$DIRECTORIO, uso_energetico$SECUENCIA_P)
+```
+
+```{r include=FALSE}
+#Se seleccionan las columnas directorio y P6051
+
+clave_P6051 <- compo_hogar %>% dplyr::select(clave, P6051)
+#Se cuentan el numero de hijos por hogar
+hijos_hogar <- clave_P6051 %>% filter(P6051 == 3) %>% count(clave)
+colnames(hijos_hogar)[2] <- "Hijos"
+```
+
+```{r include=FALSE}
+#Se filtra el parentezco dejando solo a los jefes de hogar
+jefe_hogar <- compo_hogar %>% filter(P6051 == 1)
+
+#Se asocian los hijos a cada jefe de hogar
+hijos_jefe <- merge(jefe_hogar, hijos_hogar, by = "clave", all.x = TRUE)
+
+#A los jefe de hogar sin hijos se les establecen cero hijos
+hijos_jefe$Hijos[is.na(hijos_jefe$Hijos)] <- 0
+```
+
+```{r include=FALSE}
+educacion %>% 
+  filter(ORDEN==1) -> edu_filtrada; nrow(edu_filtrada)
+fuerza_trabajo %>% 
+  filter(ORDEN==1) -> fuerza_trabajo_filtrada; nrow(fuerza_trabajo_filtrada)
+compo_hogar %>% 
+  filter(ORDEN==1) -> compo_hogar_filtrada; nrow (compo_hogar_filtrada)
+uso_energetico %>% 
+  filter(ORDEN==1) -> uso_energetico_filtrada; nrow(uso_energetico_filtrada)
+servi_hogar %>%
+  filter(ORDEN==1) -> servi_hogar_filtrada; nrow(servi_hogar_filtrada)
+salud %>% 
+  filter(ORDEN==1) -> salud_filtrada; nrow(salud_filtrada)
+```
+
+
+```{r include=FALSE}
+BASE_FINAL <- Reduce(function(x, y) merge(x, y, all.x = TRUE), list(hijos_jefe,
+                                                                    edu_filtrada,
+                                                                fuerza_trabajo_filtrada,
+                                                                servi_hogar_filtrada,
+                                                                uso_energetico_filtrada,
+                                                                salud_filtrada))
+BASE_FINAL %>% 
+  relocate(Hijos, .after = 'DIRECTORIO') -> BASE_FINAL
+```
+
+
+```{r}
+# Agregando la base datos_vivienda a BASE_FINAL
+BASE_FINAL <- merge(x = datos_vivienda, y = BASE_FINAL, by = 'DIRECTORIO', all.y = TRUE)
+```
+
+```{r}
+BASE_FILTRADA <- read.csv("BASE_FILTRADA.csv", header = TRUE)
+BASE_FILTRADA <- BASE_FILTRADA[,-1]
+```
+
+
+# Máximo nivel educativo alcanzado versus número de hijos
+
+Otra de las variables en donde podría esperarse una variación significativa en la cantidad de hijos a lo largo de sus niveles, es en el nivel educativo máximo alcanzado, en este caso, por quien sea cabeza del hogar. Esta variable cuenta con 13 niveles en respuesta a la pregunta ¿cuál es su nivel educativo más alto alcanzado? y que son los siguientes:
+
+* 1. Ninguno
+* 2. Preescolar
+* 3. Básica primaria
+* 4. Básica secundaria
+* 5. Media
+* 6. Técnico sin título
+* 7. Técnico con título
+* 8. Tecnológico sin título
+* 9. Tecnológico con título
+* 10. Universitario sin título
+* 11. Universitario con título
+* 12. Postgrado sin título
+* 13. Postgrado con título
+
+
+Véanse primero las frecuencias para esta variable.
+
+```{r message=FALSE, warning=FALSE}
+P2 <- ggplot(subset(BASE_FINAL, !is.na(P8587)), aes(x=factor(P8587)))
+P2 <- P2 + geom_bar(width = 0.8, fill="blue", alpha=0.4, binwidth = 1, col='black')
+P2 <- P2 + scale_x_discrete("Nivel educativo maximo") + scale_y_continuous("FRECUENCIA")
+P2 <- P2 + labs(title = " Frecuencias para nivel educativo máximo")+theme_bw()
+P2
+```
+
+Se observa entoncs que la opción más frecuentada ha sido la de "Básica secundaria" con más de 30 mil cabezas de hogar que sólo alcanzaron dicho nivel educativo, y seguidas, aunque de bastante lejos, por la opción correspondiente a educación media, es decir, la culminación del grado 11. 
+
+```{r message=FALSE, warning=FALSE}
+P3 <- ggplot(BASE_FINAL, aes(x=factor(P8587), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 1.5)+
+  labs(title = 'Nivel educativo máximo alcanzado',subtitle = ' ',caption = ' ',
+       x = 'Nivel educativo máximo alcanzado', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P3
+```
+
+Se observó entonces que si bien hay variabilidad en el tercer cuartil de algunos niveles educativos (1, 11, 12 y 13), la variable parece mantenerse bastante homogénea en lo que a su relación con la cantidad de hijos respecta. No obstante, al considerarse que esta variable puede ser de utilidad en la creación de nuevas variables, decide ser incluída en la base que se usará para el entrenamiento de los modelos. 
+
+
+# P6435 Tipo de trabajo
+
+* 1: Obrero empresa particular
+* 2: Obrero empresa gubernamental
+* 3: Empleado doméstico
+* 4: Profesional independiente  
+* 5: Trabajador independiente o por cuenta propia
+* 6: Patrón o empleador
+* 7: Trabajador de finca, tierra o parcela propia en arriendo
+* 8: Trabajador sin remuneración
+* 9: Ayudante sin remuneración
+* 10: Jornalero de peón
+
+```{r}
+P4 <- ggplot(subset(BASE_FINAL, !is.na(P6435)), aes(x=factor(P6435)))
+P4 <- P4 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P4 <- P4 + scale_x_discrete("Tipo de trabajo") + scale_y_continuous("FRECUENCIA")
+P4 <- P4 + labs(title = " Frecuencias para tipos de trabajo")+theme_bw()
+P4
+```
+
+```{r message=FALSE, warning=FALSE}
+P5 <- ggplot(BASE_FINAL, aes(x=factor(P6435), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Tipo de trabajo ',subtitle = ' ',caption = ' ',
+       x = 'Tipo de trabajo', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P5
+```
+
+# P5502: Estado civil
+
+Los encuestados responden a la siguente pregunta: **Actualmente…**
+
+1. No está casado(a) y vive en pareja hace menos de dos años
+2. No está casado(a) y vive en pareja hace dos años o más
+3. Está viudo(a)
+4. Está separado(a) o divorciado(a)
+5. Está soltero(a)
+6. Está casado(a)
+
+
+```{r}
+P6 <- ggplot(subset(BASE_FINAL, !is.na(P5502)), aes(x=factor(P5502)))
+P6 <- P6 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P6 <- P6 + scale_x_discrete("Estado civil") + scale_y_continuous("FRECUENCIA")
+P6 <- P6 + labs(title = " Frecuencias para el estado civil del jefe de hogar")+theme_bw()
+P6
+```
+```{r message=FALSE, warning=FALSE}
+P7 <- ggplot(BASE_FINAL, aes(x=factor(P5502), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Estado civil del jefe de hogar',subtitle = ' ',caption = ' ',
+       x = 'Estado civil', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P7
+```
+
+# P5000: Número de cuartos en el hogar
+
+
+```{r}
+P8 <- ggplot(subset(BASE_FINAL, !is.na(P5000)), aes(x=factor(P5000)))
+P8 <- P8 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P8 <- P8 + scale_x_discrete("Número de cuartos") + scale_y_continuous("FRECUENCIA")
+P8 <- P8 + labs(title = "Frecuencias número de cuartos en el hogar")+theme_bw()
+P8
+```
+
+```{r}
+P9 <- ggplot(BASE_FINAL, aes(x=P5000, y=Hijos))
+P9 <- P9 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P9 <- P9 + xlab("Número de cuartos")+ylab("Cantidad de hijos")
+P9 <- P9 + ggtitle("Número de cuartos en el hogar vs cantidad de hijos")+theme_bw()
+P9
+```
+
+
+# P5024: Número de saninatios en el hogar
+
+```{r}
+P10 <- ggplot(subset(BASE_FINAL, !is.na(P5024)), aes(x=factor(P5024)))
+P10 <- P10 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P10 <- P10 + scale_x_discrete("Número de sanitarios") + scale_y_continuous("FRECUENCIA")
+P10 <- P10 + labs(title = "Frecuencias número de sanitarios en el hogar")+theme_bw()
+P10
+```
+
+```{r message=FALSE, warning=FALSE}
+P11 <- ggplot(BASE_FINAL, aes(x=P5000, y=Hijos))
+P11 <- P11 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P11 <- P11 + xlab("Número de sanitarios")+ylab("Cantidad de hijos")
+P11 <- P11 + ggtitle("Número de sanitarios en el hogar vs cantidad de hijos")+theme_bw()
+P11
+```
+
+
+# P5013S1: Cantidad de comidas al día
+
+```{r}
+P12 <- ggplot(subset(BASE_FINAL, !is.na(P5013S1)), aes(x=factor(P5013S1)))
+P12 <- P12 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P12 <- P12 + scale_x_discrete("Comidas al día") + scale_y_continuous("FRECUENCIA")
+P12 <- P12 + labs(title = "Frecuencias número de sanitarios en el hogar")+theme_bw()
+P12
+```
+
+```{r message=FALSE, warning=FALSE}
+P13 <- ggplot(BASE_FINAL, aes(x=P5013S1, y=Hijos))
+P13 <- P13 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P13 <- P13 + xlab("Comidas al día")+ylab("Cantidad de hijos")
+P13 <- P13 + ggtitle("Comidas por día vs cantidad de hijos")+theme_bw()
+P13
+```
+
+# I_HOGAR: Ingreso mensual total del hogar
+
+
+```{r message=FALSE, warning=FALSE}
+P15 <- ggplot(BASE_FINAL, aes(x=I_HOGAR, y=Hijos))
+P15 <- P15 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P15 <- P15 + xlab("Ingreso mensual")+ylab("Cantidad de hijos")
+P15 <- P15 + ggtitle("Ingreso mensual vs cantidad de hijos")+theme_bw()
+P15
+```
+
+# PERCAPITA: Ingreso per capita del hogar
+
+```{r message=FALSE, warning=FALSE}
+P17 <- ggplot(BASE_FINAL, aes(x=PERCAPITA, y=Hijos))
+P17 <- P17 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P17 <- P17 + xlab("Ingreso per capita del hogar")+ylab("Cantidad de hijos")
+P17 <- P17 + ggtitle("Ingreso per capita del hogar vs cantidad de hijos")+theme_bw()
+P17
+```
+
+# CANT_PERSONAS_HOGAR: Cantidad de personas en el hogar
+
+```{r}
+P20 <- ggplot(subset(BASE_FINAL, !is.na(CANT_PERSONAS_HOGAR)), aes(x=factor(CANT_PERSONAS_HOGAR)))
+P20 <- P20 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P20 <- P20 + scale_x_discrete("Cantidad de personas en el hogar") + scale_y_continuous("FRECUENCIA")
+P20 <- P20 + labs(title = "Frecuencias número de personas en el hogar")+theme_bw()
+P20
+```
+
+```{r message=FALSE, warning=FALSE}
+P21 <- ggplot(BASE_FINAL, aes(x=CANT_PERSONAS_HOGAR, y=Hijos))
+P21 <- P21 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P21 <- P21 + xlab("Cantidad de personas en el hogar")+ylab("Cantidad de hijos")
+P21 <- P21 + ggtitle("Cantidad de personas en el hogar vs cantidad de hijos")+theme_bw()
+P21
+```
+
+
+# P5018: Pago por consumo de energía en la ultima factura
+
+```{r message=FALSE, warning=FALSE}
+P23 <- ggplot(BASE_FINAL, aes(x=P5018, y=Hijos))
+P23 <- P23 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P23 <- P23 + xlab("Pago por consumo de energía")+ylab("Cantidad de hijos")
+P23 <- P23 + ggtitle("Pago por consumo de energía vs cantidad de hijos")+theme_bw()
+P23
+```
+
+# P1070: Tipo vivienda
+
+```{r}
+P24 <- ggplot(subset(BASE_FINAL, !is.na(P1070)), aes(x=factor(P1070)))
+P24 <- P24 + geom_bar(width = 0.8, fill="blue", alpha=0.4, col='black' )
+P24 <- P24 + scale_x_discrete("Tipo de vivienda") + scale_y_continuous("FRECUENCIA")
+P24 <- P24 + labs(title = " Frecuencias para el tipo de vivienda")+theme_bw()
+P24
+```
+
+```{r message=FALSE, warning=FALSE}
+P25 <- ggplot(BASE_FINAL, aes(x=factor(P1070), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para tipo de vivienda vs cantidad de hijos',subtitle = ' ',caption = ' ',
+       x = 'Tipo de vivienda', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P25
+```
+
+# P6020: Sexo del jefe de hogar
+
+
+Dos niveles:
+
+* 1. Hombre
+* 2. Mujer 
+
+```{r}
+P26 <- ggplot(subset(BASE_FINAL, !is.na(P6020)), aes(x=factor(P6020)))
+P26 <- P26 + geom_bar(width = 0.8, fill=c("blue","purple"), alpha=0.4, col='black' )
+P26 <- P26 + scale_x_discrete("Sexo del jefe de hogar") + scale_y_continuous("FRECUENCIA")
+P26 <- P26 + labs(title = "Frecuencia de cada sexo en jefes de hogar")+theme_bw()
+P26
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+P27 <- ggplot(BASE_FINAL, aes(x=factor(P6020), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para sexo vs cantidad de hijos',subtitle = ' ',caption = ' ',
+       x = 'Sexo', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P27
+```
+
+
+
+# P6127: Estado de salud
+
+```{r}
+P30 <- ggplot(subset(BASE_FINAL, !is.na(P6127)), aes(x=factor(P6127)))
+P30 <- P30 + geom_bar(width = 0.8, fill=c("blue", "purple", "blue","blue"), alpha=0.4, col='black' )
+P30 <- P30 + scale_x_discrete("Estado de salud") + scale_y_continuous("FRECUENCIA")
+P30 <- P30 + labs(title = " Frecuencias para los estados de salud")+theme_bw()
+P30
+```
+
+```{r message=FALSE, warning=FALSE}
+P31 <- ggplot(BASE_FINAL, aes(x=factor(P6127), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Boxplot para estado de salud vs número de hijos',subtitle = ' ',caption = ' ',
+       x = 'Estado de salud', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P31
+```
+
+
+
+# Edad_maxima: Variable construida
+
+```{r}
+h36 <- ggplot(BASE_FILTRADA, aes(x=edad_maxima))
+h36 <- h36 + geom_histogram(binwidth = 1, col='black', fill='blue', alpha=0.4)
+h36 <- h36 + xlab("Edad máxima entre el cabeza de hogar y su pareja")+ylab("FRECUENCIA")
+h36 <- h36 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA LA EDAD MAXIMA")+theme_bw()
+h36
+```
+```{r}
+P37 <- ggplot(BASE_FILTRADA, aes(x=edad_maxima, y=Hijos))
+P37 <- P37 + geom_point(col='black', fill='blue', shape=21, alpha=0.5)
+P37 <- P37 + geom_vline(xintercept = c(28,65))
+P37 <- P37 + xlab("Edad maxima")+ylab("Cantidad de hijos")
+P37 <- P37 + ggtitle("Edad maxima vs cantidad de hijos")+theme_bw()
+P37
+```
+
+# Con_pareja: Variable construida
+
+
+Dos niveles:
+
+* 1. Con pareja que vive en el hogar
+* 2. Sin pareja 
+
+
+```{r}
+P38 <- ggplot(subset(BASE_FILTRADA, !is.na(con_pareja)), aes(x=factor(con_pareja)))
+P38 <- P38 + geom_bar(width = 0.8, fill=c("blue", "purple"), alpha=0.4, col='black' )
+P38 <- P38 + scale_x_discrete("Jefe sólo o con pareja ") + scale_y_continuous("FRECUENCIA")
+P38 <- P38 + labs(title = " Frecuencias para jefes de hogar con pareja en el hogar o sin pareja")+theme_bw()
+P38
+```
+
+```{r message=FALSE, warning=FALSE}
+P39 <- ggplot(BASE_FILTRADA, aes(x=factor(con_pareja), y=Hijos))+
+  geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
+               outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
+  labs(title = 'Estado sentimental vs número de hijos',subtitle = ' ',caption = ' ',
+       x = 'Estado sentimental', y='Numero de hijos',color=NULL)+
+  theme_elegante()+
+  stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
+P39
+```
+
+nivel_edu YA
+ALEJO tipo_trabajo
+ALEJO num_cuartos
+ALEJO num_sanitarios
+ALEJO estado_civil
+TEFA comidas_dia
+TEFA I_HOGAR
+TEFA PERCAPITA
+TEFA CANT_PERSONAS_HOGAR
+JUANFER consumo_energia
+JUANFER tipo_vivienda
+SEBAS sexo
+SEBAS estado_salud
+SEBAS edad_maxima
+SEBAS con_pareja
+
