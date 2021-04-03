@@ -24,14 +24,20 @@ datos <- read.csv("../Bases de datos/BASE_FILTRADA(sin_nas).csv")
 
 #Selección de las varaibles relevantes del conjunto de datos
 datos <- datos %>% select(CANT_PERSONAS_HOGAR,
+                          con_pareja,
                           edad_maxima,
-                          sexo, 
+                          PERCAPITA,
+                          I_HOGAR,
+                          consumo_energia,
                           Hijos)
 
 #Nombrado de las variables del conjunto de datos
 colnames(datos) <- c("Personas hogar",
-                     "Edad maxima",
-                     "Sexo", 
+                     "Con pareja",
+                     "Edad máxima",
+                     "Ingreso percapita",
+                     "Ingreso mensual",
+                     "Consumo de energia",
                      "Hijos")
 
 
@@ -82,22 +88,45 @@ ui <- fluidPage(
                                 max = 19,
                                 value = 3),
                     
-                    #Definición del control desizante para la edad del jefe
+                    #Definición de las opciones para la situacion sentimental del jefe del hogar
+                    radioButtons("con_pareja", 
+                                 "Situación sentimental del jefe del hogar:",
+                                 c("1. Con pareja que vive en el hogar" = 1,
+                                   "2. Sin pareja" = 2
+                                 )
+                    ),
+                    
+                    #Definición del control desizante para la edad máxima entre el jefe y el conyugue
                     sliderInput("edad_maxima",
                                 "Edad maxima entre el conyugue y el jefe de familia:",
                                 min = 13,
                                 max = 113,
-                                value = 20),
+                                value = 49),
                     
-                    #Definición de las opciones para el sexo del jefe del hogar
-                    radioButtons("sexo", 
-                                 "Sexo del jefe del hogar:",
-                                 c("Masculino" = 1,
-                                   "Femenino" = 2
-                                 )
-                    )
+                    #Definición del control desizante para el ingreso percapita
+                    sliderInput("percapita",
+                                "Ingreso per-cápita:",
+                                min = 0,
+                                max = 120000000 ,
+                                value = 711110,
+                                ticks = FALSE),
+                    
+                    #Definición del control desizante para el ingreso mensual
+                    sliderInput("i_hogar",
+                                "Ingreso mensual del hogar:",
+                                min = 0,
+                                max = 284600000,
+                                value = 1734180,
+                                ticks = FALSE),
                     
                     
+                    #Definición del control desizante para la energia de la ultima factura
+                    sliderInput("energia",
+                                "Pago por consumo de energía en la ultima factura:",
+                                min = 0,
+                                max = 284600000,
+                                value = 46161,
+                                ticks = FALSE),
                     
                 ),
                 
@@ -145,12 +174,18 @@ server <- function(input, output) {
     #Creación del dataframe de varaibles de entrada
     variables_entrada <- reactive({
         data.frame(
-            Caracteristica = c("Número de personas",
-                               "Edad maxima",
-                               "Sexo del jefe del hogar"),
+            Caracteristica = c("Número de personas en el hogar",
+                               "Situación sentimental del jefe del hogar",
+                               "Edad maxima entre el conyugue y el jefe de familia",
+                               "Ingreso per-cápita",
+                               "Ingreso mensual del hogar",
+                               "Pago por consumo de energía en la ultima factura"),
             Valor = c(input$personas,
+                      input$con_pareja,
                       input$edad_maxima,
-                      input$sexo))
+                      input$percapita,
+                      input$i_hogar,
+                      input$energia))
         
     })
     
@@ -217,7 +252,7 @@ server <- function(input, output) {
         options(scipen=999)
         
         #Renombrado de los nombres de las columnas de la tabla de frecuencias
-        colnames(frecuencias) <- c("Hjos", 
+        colnames(frecuencias) <- c("Hijos", 
                                    "Frecuencia", 
                                    "Frecuencia acumulada", 
                                    "Frecuencia relativa", 
