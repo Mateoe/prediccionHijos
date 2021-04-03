@@ -24,6 +24,7 @@ library("Ckmeans.1d.dp")
 # Lectura de las bases de datos
 
 ```{r}
+set.seed(123)
 setwd("C:/Users/123/Desktop/TAE/Actividades/TRABAJO 1")
 train <- read.csv("train.csv", header = TRUE)
 test <- read.csv("test.csv", header = TRUE)
@@ -110,7 +111,7 @@ parametros_xgb <- list("objective"="multi:softprob",
                        max_depth = 6)   #Se puede hacer hyperparameter tunning
 modelo_xg <- xgb.train(params = parametros_xgb,
                        data = train_matrix,
-                       nrounds = nrondas)
+                       nrounds = 1000)
 ```
 
 Ahora se hace la predicción para el conjunto de prueba
@@ -124,7 +125,11 @@ test_prediction <- matrix(test_pred, nrow = numero_de_clases,
   data.frame() %>%
   mutate(label = test_label+1,
          max_prob = max.col(., "last"))
+```
+
+```{r}
 # Matriz de confusión para el test set
+
 confusionMatrix(factor(test_prediction$max_prob),
                 factor(test_prediction$label),
                 mode = "everything")
@@ -151,10 +156,10 @@ print(P1)
 # Reducción de variables en búsqueda de mejoría
 
 ```{r}
-sub_train <- train[,c(1,12,16,17,20,15)]
+sub_train <- train[,c(1,8,9,10,11,15,16)]
 sub_train_label  <- sub_train[,1]
 sub_train_covariables <- as.matrix(sub_train[,-1])
-sub_test <- test[,c(1,12,16,17,20,15)]
+sub_test <- test[,c(1,8,9,10,11,15,16)]
 sub_test_label  <- sub_test[,1]
 sub_test_covariables <- as.matrix(sub_test[,-1])
 head(sub_train)
@@ -171,10 +176,10 @@ parametros_xgb2 <- list("objective"="multi:softprob",
                        "num_class"=numero_de_clases,
                        eta = 0.3,
                        early_stoppin_rounds = 200,
-                       nfold =10,
-                       max_depth = 6)   #Se puede hacer hyperparameter tunning
+                       nfold =5,
+                       max_depth = 8)   #Se puede hacer hyperparameter tunning
 modelo_xg2 <- xgb.train(params = parametros_xgb2,
-                       data = sub_train_matrix, nrounds=1000)
+                       data = sub_train_matrix, nrounds=500)
 ```
 
 ```{r}
