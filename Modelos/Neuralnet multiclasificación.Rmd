@@ -1,0 +1,125 @@
+---
+title: "Red Neuronal Multiclasificación"
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry" 
+date: "Marzo 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Instalación y carga del paquete neuralnet
+
+```{r message=TRUE, warning=FALSE}
+require(neuralnet)
+require(nnet)
+```
+
+# Lectura de las bases
+
+```{r}
+set.seed(123)
+train <- read.csv("train.csv", header = TRUE)
+train <- train[,-1]
+test <- read.csv("test.csv", header = TRUE)
+test <- test[,-1]
+```
+
+# Creación de la sub base de entrenamiento y transformación de variables categóricas
+
+Dado que se trabaja con una red neuronal, se hace preciso re codificar las variables categóricas como vectores de 0s y 1s para cada uno de los niveles de las variables. En este caso se están empleando sólo dos variables categóricas, la de respuesta (cantidad de hijos) y con_pareja. En caso de que se usen más, habría que recodificarlas también en vectores de 0s y 1s.
+
+```{r}
+# Sub base de entrenamiento
+sub_train <- cbind(train[, 2:16], class.ind(as.factor(train$Hijos)))
+names(sub_train) <- c(names(train)[2:16],"y0","y1","y2","y3","y4","y5","y6","y7","y8",
+                  "y9","y10","y11")
+sub_train <- cbind(sub_train[,c(7,9,10,14)], sub_train[,16:27], class.ind(as.factor(train$con_pareja)))
+names(sub_train) <- c(names(sub_train[,1:16]),"p1","p2")
+```
+
+```{r}
+# Sub base de prueba
+sub_test <- cbind(test[,2:16], class.ind(as.factor(test$Hijos)), rep(0,27947))
+names(sub_test) <- c(names(test)[2:16],"y0","y1","y2","y3","y4","y5","y6","y7","y8",
+                  "y9","y10","y11")
+sub_test <- cbind(sub_test[,c(7,9,10,14)], sub_test[,16:27], class.ind(as.factor(test$con_pareja)))
+names(sub_test) <- c(names(sub_test[,1:16]),"p1","p2")
+```
+
+# Reescalamiento de las variables continuas
+
+Se llevan las variables continuas a valores entre 0 y 1 para acortar la diferencia en las dimensiones de dichas variables y mejorar el procesamiento de la red (valores muy grandes pueden hacer que tarde más).
+
+```{r}
+# Reescalando las variables continuas en sub base de entrenamiento
+reescalar <- function(x){ (x - min(x))/(max(x) - min(x)) }
+sub_train[,1:4] <- data.frame(lapply(train[,1:4], reescalar))
+head(sub_train)
+```
+
+```{r}
+# Reescalando las variables continuas en sub base de prueba
+reescalar <- function(x){ (x - min(x))/(max(x) - min(x)) }
+sub_test[,1:4] <- data.frame(lapply(test[,1:4], reescalar))
+head(sub_test)
+```
+
+# Construcción del modelo
+
+Se crea la fórmula que seguirá el modelo:
+
+```{r}
+nombres <- names(sub_train)
+f <- as.formula(paste("y0 + y1 + y2 + y3 + y4 + y5 + y6 + y7 + y8 + y9 + y10 + y11 ~", paste(nombres[!nombres %in% c("y0","y1","y2","y3","y4","y5","y6","y7","y8","y9","y10","y11")],collapse = " + ")))
+f
+```
+Se entrena el modelo con la fórmula anterior y se definen los parámetros como el número de hidden layers, la función de activación y la tasa de aprendizaje. 
+
+```{r}
+red1 <- neuralnet(f,
+                data = sub_train,
+                hidden = c(7, 5, 3),
+                act.fct = "logistic",
+                linear.output = FALSE,
+                lifesign = "minimal", threshold = 0.3)
+```
+
+Gráfico para entender las relaciones que ha hecho la red neuronal
+
+```{r}
+plot(red1, rep = "best")
+```
+
+# Predicción
+
+Primero obsérvese que la predicción en el conjunto de entrenamiento es parcialmente buena (98.62% de precisión, aunque lo idóneo hubiese sido un 100%). Esta medida no es de tanta utilidad; la realmente interesante será la del conjunto de prueba.
+
+```{r}
+pr.nn <- predict(red1, newdata = sub_train[,c(1,2,3,4,17,18)])
+head(pr.nn)
+pr.nn2 <- max.col(pr.nn)
+reales <- max.col(sub_train[,5:16])
+mean(pr.nn2==reales)
+```
+
+Precisión sobre el test set:
+
+
+```{r}
+preds_red1 <- predict(red1, newdata = sub_test[,c(1,2,3,4,17,18)])
+head(preds_red1)
+preds_red1_2 <- max.col(preds_red1)
+reales2 <- max.col(sub_test[,5:16])
+mean(preds_red1_2==reales2)
+```
+
+Se obtiene un 78.11% de precisión, que sigue siendo menor que el 78.68% obtenido con el modelo XGBoost. Optimizar los parámetros de la red neuronal podría llevar a una mejoría.
+
+
+
+
