@@ -138,7 +138,7 @@ uso_energetico$clave <- paste0(uso_energetico$DIRECTORIO, uso_energetico$SECUENC
 #Se seleccionan las columnas directorio y P6051
 
 clave_P6051 <- compo_hogar %>% dplyr::select(clave, P6051)
-#Se cuentan el numero de hijos por hogar
+#Se cuentan el número de hijos por hogar
 hijos_hogar <- clave_P6051 %>% filter(P6051 == 3) %>% count(clave)
 colnames(hijos_hogar)[2] <- "Hijos"
 ```
@@ -195,10 +195,10 @@ BASE_FILTRADA <- BASE_FILTRADA[,-1]
 
 # Máximo nivel educativo alcanzado versus número de hijos
 
-Otra de las variables en donde podría esperarse una variación significativa en la cantidad de hijos a lo largo de sus niveles, es en el nivel educativo máximo alcanzado, en este caso, por quien sea cabeza del hogar. Esta variable cuenta con 13 niveles en respuesta a la pregunta ¿cuál es su nivel educativo más alto alcanzado? y que son los siguientes:
+Una de las variables en donde podría esperarse una variación significativa en la cantidad de hijos a lo largo de sus niveles, es en el nivel educativo máximo alcanzado, en este caso, por quien sea cabeza del hogar. Esta variable cuenta con 13 niveles en respuesta a la pregunta ¿cuál es su nivel educativo más alto alcanzado? y que son los siguientes:
 
 * 1. Ninguno
-* 2. Preescolar
+* 2.Preescolar
 * 3. Básica primaria
 * 4. Básica secundaria
 * 5. Media
@@ -229,7 +229,7 @@ P3 <- ggplot(BASE_FINAL, aes(x=factor(P8587), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 1.5)+
   labs(title = 'Nivel educativo máximo alcanzado',subtitle = ' ',caption = ' ',
-       x = 'Nivel educativo máximo alcanzado', y='Numero de hijos',color=NULL)+
+       x = 'Nivel educativo máximo alcanzado', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P3
@@ -242,16 +242,16 @@ Se observa además que si bien hay variabilidad en el tercer cuartil de algunos 
 
 Esta variable cuenta con los siguientes niveles:
 
-* 1: Obrero empresa particular
-* 2: Obrero empresa gubernamental
-* 3: Empleado doméstico
-* 4: Profesional independiente  
-* 5: Trabajador independiente o por cuenta propia
-* 6: Patrón o empleador
-* 7: Trabajador de finca, tierra o parcela propia en arriendo
-* 8: Trabajador sin remuneración
-* 9: Ayudante sin remuneración
-* 10: Jornalero de peón
+* 1. Obrero empresa particular
+* 2. Obrero empresa gubernamental
+* 3. Empleado doméstico
+* 4. Profesional independiente  
+* 5. Trabajador independiente o por cuenta propia
+* 6. Patrón o empleador
+* 7. Trabajador de finca, tierra o parcela propia en arriendo
+* 8. Trabajador sin remuneración
+* 9. Ayudante sin remuneración
+* 10. Jornalero de peón
 
 ```{r}
 P4 <- ggplot(subset(BASE_FINAL, !is.na(P6435)), aes(x=factor(P6435)))
@@ -261,20 +261,20 @@ P4 <- P4 + labs(title = " Frecuencias para tipos de trabajo")+theme_bw()
 P4
 ```
 
-Los tipos d e trabajos más frecuentados a nivel nacional corresponden entonces a obreros de empresa particular y a trabajadores independientes, con una notira diferencia por sobre el resto de trabajos. 
+Los tipos de trabajos más frecuentados a nivel nacional corresponden entonces a obreros de empresa particular y a trabajadores independientes, con una notoria diferencia por sobre el resto de trabajos. 
 
 ```{r message=FALSE, warning=FALSE}
 P5 <- ggplot(BASE_FINAL, aes(x=factor(P6435), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
   labs(title = 'Tipo de trabajo ',subtitle = ' ',caption = ' ',
-       x = 'Tipo de trabajo vs número de hijos', y='Numero de hijos',color=NULL)+
+       x = 'Tipo de trabajo vs número de hijos', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P5
 ```
 
-Al revisar una posible variación del número de hijos de acuerdo a los tipos de trabajo, no se observa información de mucha utilidad más allá de la breve variación en el promedio de hijos por hogar en cada tipo de trabajo (demasiado leve para parecer significativa). No obstante, se incluirá esta variable en la base de datos con que se entrenarán los modelos a fin de evaluar si en presencia de otras variables, una posible interacción toma relevancia o tiene algún tipo de influencia sobre el número de hijos. 
+Al revisar una posible variación del número de hijos de acuerdo a los tipos de trabajo, no se observa información de mucha utilidad más allá de la breve variación en el promedio de hijos por hogar en cada tipo de trabajo (demásiado leve para parecer significativa). No obstante, se incluirá esta variable en la base de datos con que se entrenarán los modelos a fin de evaluar si en presencia de otras variables, una posible interacción toma relevancia o tiene algún tipo de influencia sobre el número de hijos. 
 
 
 
@@ -282,12 +282,12 @@ Al revisar una posible variación del número de hijos de acuerdo a los tipos de
 
 Los encuestados responden a la siguente pregunta: **Actualmente…**
 
-1. No está casado(a) y vive en pareja hace menos de dos años
-2. No está casado(a) y vive en pareja hace dos años o más
-3. Está viudo(a)
-4. Está separado(a) o divorciado(a)
-5. Está soltero(a)
-6. Está casado(a)
+* 1. No está casado(a) y vive en pareja hace menos de dos años
+* 2. No está casado(a) y vive en pareja hace dos años o más
+* 3. Está viudo(a)
+* 4. Está separado(a) o divorciado(a)
+* 5. Está soltero(a)
+* 6. Está casado(a)
 
 
 ```{r}
@@ -305,7 +305,7 @@ P7 <- ggplot(BASE_FINAL, aes(x=factor(P5502), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
   labs(title = 'Estado civil del jefe de hogar',subtitle = ' ',caption = ' ',
-       x = 'Estado civil', y='Numero de hijos',color=NULL)+
+       x = 'Estado civil', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P7
@@ -316,7 +316,7 @@ Esta variable si logra enseñar un poco más de variación sobre la influencia d
 
 # P5000: Número de cuartos en el hogar
 
-Variable de tipo discreto que surge como respuesta a la pregunta ¿cuántos sanitarios hay en el hogar? 
+Variable de tipo discreto que surge como respuesta a la pregunta ¿cuántos cuartos hay en el hogar? 
 
 ```{r}
 P8 <- ggplot(subset(BASE_FINAL, !is.na(P5000)), aes(x=factor(P5000)))
@@ -339,7 +339,7 @@ P9
 Gráficamente se puede observar una tendencia decreciente en el número de hijos por hogar cuando se superan los 6 cuartos en la vivienda, esto es que, hay evidencia de que a más cuartos en el hogar, menor el número de hijos. También es de resaltar que de 1 a 4 cuartos, la cantidad de hijos presenta un comportamiento bastante prolijo o "parejo". Dicha evidencia de decaimiento en el número de hijos conforme al número de cuartos ha sido suficiente para decidir incluirla en la base final.
 
 
-# P5024: Número de saninatios en el hogar
+# P5024: Número de sanitarios en el hogar
 
 Esta variable, como la anterior, responde a un conteo discreto del número de sanitarios que se poseen en el hogar. Véanse entonces los gráficos de interés para esta variable.
 
@@ -370,11 +370,11 @@ Los encuestados responden a la siguiente pregunta:
 
 ¿Con qué frecuencia preparan alimentos en este hogar? (Veces al día)
 
-1 Todos los días de la semana
-2 Cuatro a seis veces a la semana
-3 Dos o tres veces a la semana
-4 Una vez por semana 
-Veces al día
+* 1. Todos los días de la semana
+* 2. Cuatro a seis veces a la semana
+* 3. Dos o tres veces a la semana
+* 4. Una vez por semana 
+*(Veces al día)*
 
 ```{r}
 P12 <- ggplot(subset(BASE_FINAL, !is.na(P5013S1)), aes(x=factor(P5013S1)))
@@ -384,7 +384,7 @@ P12 <- P12 + labs(title = "Frecuencias para las cantidades de comidas al día")+
 P12
 ```
 
-Se observa que la gran mayoría de los datos se concentran en 3 , 2 y 1 comidas al día que preparan en la casa del jede del hogar, sin embargo lo más frecuente son 3 comidas al día, ya que esta tiene más de 50 mil datos.
+Se observa que la gran mayoría de los datos se concentran en 3 , 2 y 1 comidas al día que preparan en la casa del jefe del hogar, sin embargo lo más frecuente son 3 comidas al día, ya que esta tiene más de 50 mil datos.
 
 ```{r message=FALSE, warning=FALSE}
 P13 <- ggplot(BASE_FINAL, aes(x=P5013S1, y=Hijos))
@@ -394,9 +394,12 @@ P13 <- P13 + ggtitle("Comidas por día vs cantidad de hijos")+theme_bw()
 P13
 ```
 
-Del anterior gráfico no se ve gran relación entre las comidas al día y números de hijos del jefe del hogar, sin embargo, se decide incluir para observar si en compañia de las otras varibales aporta al modelo de entrenamiento.
+
+Del anterior gráfico observamos una tendencia creciente entre 1 y 3 comidas para la cantidad de hijos; sin embargo, del anterior gráfico de frecuencia se vio que la mayor proporción de personas que respondieron la encuesta realizan 3 comidas, por ende no muestra gran aporte para la predicción número de hijos en los hogares. A pesar de esto, se decide incluir para observar si en compañia de las otras variables aporta al modelo de entrenamiento.
 
 # I_HOGAR: Ingreso mensual total del hogar
+
+Variable continua que responde a la pregunta Ingreso mesnual total del hogar
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -407,9 +410,11 @@ P15 <- P15 + ggtitle("Ingreso mensual vs cantidad de hijos")+theme_bw()
 P15
 ```
 
-Se observa un tipo de relación inversa entre ingresos del hogar y cantidad de hijos, es decir, parece ser que entre mas ingresos tiene el jefe del hogar menos hijos tiene, por esta razon se decide agregar esta variable a la base de datos.
+Se observa un tipo de relación inversa entre ingresos del hogar y cantidad de hijos, es decir, parece ser que entre mas ingresos hay en el hogar menor cantidad de hijos hay; por esta razón se decide agregar esta variable a la base de datos.
 
-# PERCAPITA: Ingreso per capita del hogar
+# PERCAPITA: Ingreso per cápita del hogar
+
+Variable continua que responde a la pregunta Ingreso per cápita  del hogar
 
 ```{r message=FALSE, warning=FALSE}
 P17 <- ggplot(BASE_FINAL, aes(x=PERCAPITA, y=Hijos))
@@ -419,9 +424,11 @@ P17 <- P17 + ggtitle("Ingreso per capita del hogar vs cantidad de hijos")+theme_
 P17
 ```
 
-Al igual que el gráfico del ingreso mensual del hogar, se observa una relación inversa entre per capita del hogar y cantidad de hijos, es decir, a medida que hay un mayor ingreso percapita en el hogar tienden a tener una menor cantidad de hijos.
+Al igual que el gráfico del ingreso mensual del hogar, se observa una relación inversa entre per cápita del hogar y cantidad de hijos, es decir, a medida que hay un mayor ingreso percapita en el hogar tienden a tener una menor cantidad de hijos.
 
 # CANT_PERSONAS_HOGAR: Cantidad de personas en el hogar
+
+Variable discreta que responde a la cantidad de personas en el hogar. 
 
 ```{r}
 P20 <- ggplot(subset(BASE_FINAL, !is.na(CANT_PERSONAS_HOGAR)), aes(x=factor(CANT_PERSONAS_HOGAR)))
@@ -431,7 +438,7 @@ P20 <- P20 + labs(title = "Frecuencias número de personas en el hogar")+theme_b
 P20
 ```
 
-Observndo el anterior gráfico notamos que el número de personas más frecuentes en los hogares en Colombia es de 2 y 3 personas, seguido a esto existen la misma cantidad de hogares de una persona y 4 personas, según los encuestados.
+Observando el anterior gráfico notamos que el número de personas más frecuentes en los hogares en Colombia es de 2 y 3 personas, seguido a esto existen la misma cantidad de hogares de una persona y 4 personas, según los encuestados.
 
 ```{r message=FALSE, warning=FALSE}
 P21 <- ggplot(BASE_FINAL, aes(x=CANT_PERSONAS_HOGAR, y=Hijos))
@@ -441,7 +448,7 @@ P21 <- P21 + ggtitle("Cantidad de personas en el hogar vs cantidad de hijos")+th
 P21
 ```
 
-Se puede notar una relación positiva entre la cantidad de personas y el número de hijos, lo cual da a entender que entre más personas hay en el hogar, hay mayor número de hijos, con lo anterior mencionado, se agrega la variable a la base de datos para ver como aporta al modelo de entrenamiento.
+La gráfica muestra una tendencia creciente entre la cantidad de personas y el número de hijos, lo cual da a entender que entre más personas hay en el hogar, hay mayor número de hijos; con lo anterior mencionado se agrega la variable a la base de datos para ver como aporta al modelo de entrenamiento.
 
 # P5018: Pago por consumo de energía en la ultima factura
 
@@ -455,18 +462,19 @@ P23 <- P23 + ggtitle("Pago por consumo de energía vs cantidad de hijos")+theme_
 P23
 ```
 
-Se nota que la mayoría de hogares pagan menos de 500000 COP en su factura de la luz. Dentro de esta región la mayoría se encuentra entre 
-los 4 y 0 hijos, donde el valor pagado oscila entre 0 y un poco mas de 400000 COP aunque también existe una cantidad considerable de casos 
-donde se tienen entre 5 y 8 hijos y el pago de los servicios es muy bajo, entre 0 y menos de 250000 COP.
+Se nota que la mayoría de hogares pagan un valor menor de 500000 COP en su factura de la luz. Dentro de esta región la mayoría se encuentra entre 
+los 0 y 4 hijos, donde el valor pagado oscila entre 0 y un poco mas de 400000 COP aunque también existe una cantidad considerable de casos 
+donde se tienen entre 5 y 8 hijos y el pago de los servicios es más bajo, entre 0 y menos de 250000 COP.
 
 # P1070: Tipo vivienda
 
 Tipo de vivienda pueden ser los siguiente:
-1 Casa
-2 Apartamento
-3 Cuarto(s)
-4 Vivienda tradicional indigena
-5 Otro (carpa, contenedor, vagón, embarcación, cueva, refugio natural, etc)
+
+* 1. Casa
+* 2. Apartamento
+* 3. Cuarto(s)
+* 4. Vivienda tradicional indigena
+* 5. Otro (carpa, contenedor, vagón, embarcación, cueva, refugio natural, etc)
 
 ```{r}
 P24 <- ggplot(subset(BASE_FINAL, !is.na(P1070)), aes(x=factor(P1070)))
@@ -476,7 +484,7 @@ P24 <- P24 + labs(title = " Frecuencias para el tipo de vivienda")+theme_bw()
 P24
 ```
 
-En este caso se puede apreciar que la mayoria de los encuestados viven en casas y apartamentos, una pequeña porción en otros lugares a comparación. El primer lugar lo ocupan las familias que
+En este caso se puede apreciar que la mayoría de los encuestados viven en casas y apartamentos, una pequeña porción en otros lugares a comparación. El primer lugar lo ocupan las familias que
 viven en casas, superando los 60000 casos.
 
 ```{r message=FALSE, warning=FALSE}
@@ -484,22 +492,22 @@ P25 <- ggplot(BASE_FINAL, aes(x=factor(P1070), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
   labs(title = 'Boxplot para tipo de vivienda vs cantidad de hijos',subtitle = ' ',caption = ' ',
-       x = 'Tipo de vivienda', y='Numero de hijos',color=NULL)+
+       x = 'Tipo de vivienda', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P25
 ```
 
 Se puede notar que existe una buena variabilidad en este caso, ya que la diferencia entre medianas y medias es significativo.
-Además se puede notar que los cuartiles son diferentes y los máximos para los casos 3 y 4. Notar que la mediana de las personas que viven en cuartos es similar a aquella de los que viven
+Además se puede apreciar que los cuartiles y los máximos se diferencian para los casos 3 y 4. Notar que la mediana de las personas que viven en cuartos es similar a aquella de los que viven
 en otro tipo de vivienda.
 
 # P6020: Sexo del jefe de hogar
 
-A consideracion de nuestro grupo de trabajo y por su uso en diferentes articulos orientados al estudio de los hogares, esta variable es de vital importancia en el estudio de la cantidad de hijos en un hogar y cuenta con dos niveles:
+A consideración de nuestro grupo de trabajo y por su uso en diferentes articulos orientados al estudio de los hogares, esta variable es de vital importancia en el estudio de la cantidad de hijos en un hogar y cuenta con dos niveles:
 
-*1. Hombre
-*2. Mujer
+* 1. Hombre
+* 2. Mujer
 
 ```{r}
 P26 <- ggplot(subset(BASE_FINAL, !is.na(P6020)), aes(x=factor(P6020)))
@@ -509,29 +517,29 @@ P26 <- P26 + labs(title = "Frecuencia de cada sexo en jefes de hogar")+theme_bw(
 P26
 ```
 
-En la grafica, donde se muestra la frecuencia de la variable sexo, existe una diferencia visible entre las proporciones para el sexo de los jefes del hogar, siendo la proporcion de hombres cabeza de hogar casi el doble que la proporcion de mujeres cabeza de hogar.
+En la gráfica, donde se muestra la frecuencia de la variable sexo, existe una diferencia visible entre las proporciones para el sexo de los jefes del hogar, siendo la proporción de hombres cabeza de hogar casi el doble que la proporción de mujeres cabeza de hogar.
 
 ```{r message=FALSE, warning=FALSE}
 P27 <- ggplot(BASE_FINAL, aes(x=factor(P6020), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
   labs(title = 'Boxplot para sexo vs cantidad de hijos',subtitle = ' ',caption = ' ',
-       x = 'Sexo', y='Numero de hijos',color=NULL)+
+       x = 'Sexo', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P27
 ```
 
-A pesar de la diferencia de proporciones entre los niveles de la variable sexo, cuando se compara sexo contra cantidad de hijos por hogar en esta gráfica, no existe mucha variación entre los niveles de la variable. A pesar de esto, permanecerá en nuestra base de datos final para comprobar si su interacción con las otras variables es significativa para la prediccion de la cantidad de hijos de un hogar.
+A pesar de la diferencia de proporciones entre los niveles de la variable sexo, cuando se compara sexo contra cantidad de hijos por hogar en esta gráfica, no existe mucha variación entre los niveles de la variable. A pesar de esto, permanecerá en nuestra base de datos final para comprobar si su interacción con las otras variables es significativa para la prediccón de la cantidad de hijos de un hogar.
 
 # P6127: Estado de salud
 
 Esta variable, que corresponde a la pregunta ¿ El estado de salud de _ en general, es:?, cuenta con cuatro niveles:
 
-*1. Muy bueno
-*2. Bueno
-*3. Regular
-*4. Malo
+** 1**. Muy bueno
+* 2. Bueno
+* 3. Regular
+* 4. Malo
 
 
 ```{r}
@@ -542,25 +550,25 @@ P30 <- P30 + labs(title = " Frecuencias para los estados de salud")+theme_bw()
 P30
 ```
 
-De la grafica se podría deducir que en colombia por lo general los jefes de hogar cuentan con una buena salud aunque existe una gran proporcion de jefes de hogar con un estado de salud regular.
+De la gráfica se podría deducir que en colombia por lo general los jefes de hogar cuentan con una buena salud aunque existe una gran proporción de jefes de hogar con un estado de salud regular.
 
 ```{r message=FALSE, warning=FALSE}
 P31 <- ggplot(BASE_FINAL, aes(x=factor(P6127), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
   labs(title = 'Boxplot para estado de salud vs número de hijos',subtitle = ' ',caption = ' ',
-       x = 'Estado de salud', y='Numero de hijos',color=NULL)+
+       x = 'Estado de salud', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P31
 ```
 
-Aunque no se observa una gran variabilidad entre los tres primeros niveles de la variable Estado de salud cuando se grafica vs Hijos, el nivel que representa una mala salud si difiere de los demas y por ende se decide conservar la variable para verificar su importancia en los modelos.
+Aunque no se observa una gran variabilidad entre los tres primeros niveles de la variable Estado de salud cuando se gráfica vs Hijos, el nivel que representa una mala salud si difiere de los demás y por ende se decide conservar la variable para verificar su importancia en los modelos.
 
 
 # Edad_maxima: Variable construida
 
-Esta variable, que corresponde a la edad máxima entre el cabeza de hogar y su conyuge (o pareja), se decide crear en vista de que la edad de ambos por separado mostraba una gran importancia para la cantidad de hijos de un hogar.
+Esta variable, que corresponde a la edad máxima entre el cabeza de hogar y su cónyuge (o pareja), se decide crear en vista de que la edad de ambos por separado mostraba una gran importancia para la cantidad de hijos de un hogar.
 
 ```{r}
 h36 <- ggplot(BASE_FILTRADA, aes(x=edad_maxima))
@@ -570,7 +578,7 @@ h36 <- h36 + ggtitle("HISTOGRAMA DE FRECUENCIAS PARA LA EDAD MAXIMA")+theme_bw()
 h36
 ```
 
-Las edades máximas más recurrentes entre las cabezas de hogar y su conyuge en el estudio, se encuentran entre los 30 y 60 años (aproximadamente). Esta es una variable que, a priori, puede considerarse determinante y podría esperarse tenga alguna influencia bien sea directa o conjunta sobre la cantidad de hijos. Se cree que una pareja con edades entre los 35 y 50 años, es más propensa a tener más hijos que una pareja de menores de 25 años. 
+Las edades máximas más recurrentes entre las cabezas de hogar y su cónyuge en el estudio, se encuentran entre los 30 y 60 años (aproximadamente). Esta es una variable que, a priori, puede considerarse determinante y podría esperarse tenga alguna influencia bien sea directa o conjunta sobre la cantidad de hijos. Se cree que una pareja con edades entre los 35 y 50 años, es más propensa a tener más hijos que una pareja de menores de 25 años. 
 
 ```{r}
 P37 <- ggplot(BASE_FILTRADA, aes(x=edad_maxima, y=Hijos))
@@ -585,7 +593,7 @@ A pesar de tener una densidad bastante considerable a lo largo de las edades, es
 
 # Con_pareja: Variable construida
 
-Para ajustar un pequeño problema con los NA's encontrados en la variable P6071 que representa ¿El (la) cónyuge de___vive en este hogar?, por intuición se decidió inferir que los datos en NA se debian a que el jefe de hogar no tenía pareja o conyuge, y por esto de decidio crear una variable que nos dijera si los jefes de hogar viven con pareja y si no (incluyendo si no tenían pareja). Por tanto, sus niveles fueron:
+Para ajustar un pequeño problema con los NA's encontrados en la variable P6071 que representa ¿El (la) cónyuge de___vive en este hogar?, por intuición se decidió inferir que los datos en NA se debian a que el jefe de hogar no tenía pareja o cónyuge, y por esto de decidió crear una variable que nos dijera si los jefes de hogar viven con pareja y si no (incluyendo si no tenían pareja). Por tanto, sus niveles fueron:
 
 * 1. Vive en el hogar con pareja.
 * 2. Vive en el hogar sin pareja ó no tiene pareja.
@@ -606,13 +614,13 @@ P39 <- ggplot(BASE_FILTRADA, aes(x=factor(con_pareja), y=Hijos))+
   geom_boxplot(color='blue',fill='blue',alpha=0.2,notch = F,notchwidth = 0.8,
                outlier.colour = 'purple',outlier.fill = 'purple',outlier.size = 3)+
   labs(title = 'Estado sentimental vs número de hijos',subtitle = ' ',caption = ' ',
-       x = 'Estado sentimental', y='Numero de hijos',color=NULL)+
+       x = 'Estado sentimental', y='número de hijos',color=NULL)+
   theme_elegante()+
   stat_summary(fun=mean,geom='point',shape=21,size=2,color='black',fill='black')
 P39
 ```
 
-De esta grafica que llamamos "Estado sentimental vs número de hijos" podemos aprencia una leve variacion entre ambos niveles de la variable creada con respecto al numero de hijos. Lo cual, nos hace inferir su importancia en la predicción del numero de hijos.
+De esta gráfica que llamamos "Estado sentimental vs número de hijos" podemos aprencia una leve variación entre ambos niveles de la variable creada con respecto al número de hijos. Lo cual, nos hace inferir su importancia en la predicción del número de hijos.
 
 
 
