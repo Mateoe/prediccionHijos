@@ -330,8 +330,9 @@ P11</code></pre></div>
 <li>Dos o tres veces a la semana</li>
 </ol></li>
 <li><ol start="4" style="list-style-type: decimal">
-<li>Una vez por semana <em>(Veces al día)</em></li>
+<li>Una vez por semana</li>
 </ol></li>
+<li>(Veces al día)</li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">P12 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">subset</span>(BASE_FINAL, <span class="op">!</span><span class="kw">is.na</span>(P5013S1)), <span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">factor</span>(P5013S1)))
 P12 &lt;-<span class="st"> </span>P12 <span class="op">+</span><span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">width =</span> <span class="fl">0.8</span>, <span class="dt">fill=</span><span class="st">&quot;blue&quot;</span>, <span class="dt">alpha=</span><span class="fl">0.4</span>, <span class="dt">col=</span><span class="st">'black'</span> )
@@ -469,7 +470,20 @@ P27</code></pre></div>
 <div id="p6127-estado-de-salud" class="section level1">
 <h1>P6127: Estado de salud</h1>
 <p>Esta variable, que corresponde a la pregunta ¿ El estado de salud de _ en general, es:?, cuenta con cuatro niveles:</p>
-<p>** 1**. Muy bueno * 2. Bueno * 3. Regular * 4. Malo</p>
+<ul>
+<li><ol style="list-style-type: decimal">
+<li>Muy bueno</li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li>Bueno</li>
+</ol></li>
+<li><ol start="3" style="list-style-type: decimal">
+<li>Regular</li>
+</ol></li>
+<li><ol start="4" style="list-style-type: decimal">
+<li>Malo</li>
+</ol></li>
+</ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">P30 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">subset</span>(BASE_FINAL, <span class="op">!</span><span class="kw">is.na</span>(P6127)), <span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">factor</span>(P6127)))
 P30 &lt;-<span class="st"> </span>P30 <span class="op">+</span><span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">width =</span> <span class="fl">0.8</span>, <span class="dt">fill=</span><span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;purple&quot;</span>, <span class="st">&quot;blue&quot;</span>,<span class="st">&quot;blue&quot;</span>), <span class="dt">alpha=</span><span class="fl">0.4</span>, <span class="dt">col=</span><span class="st">'black'</span> )
 P30 &lt;-<span class="st"> </span>P30 <span class="op">+</span><span class="st"> </span><span class="kw">scale_x_discrete</span>(<span class="st">&quot;Estado de salud&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="st">&quot;FRECUENCIA&quot;</span>)
