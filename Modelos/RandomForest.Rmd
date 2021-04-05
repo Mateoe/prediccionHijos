@@ -1,0 +1,110 @@
+---
+title: "RandomForest Multiclasificación"
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry" 
+date: "Marzo 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de librerías
+
+Se precisarán las siguientes dos librerías para la creación de los modelos
+
+```{r message=FALSE, warning=FALSE}
+library(caret)
+library(randomForest)
+set.seed(123)
+```
+
+# Lectura de las bases de datos
+
+Se procede a hacer lectura de las bases de entrenamiento y prueba, sujetas a que pueda hacerse reducción de variables.
+
+```{r}
+setwd("C:/Users/123/Desktop/TAE/Actividades/TRABAJO 1")
+train <- read.csv("train.csv", header = TRUE)
+test <- read.csv("test.csv", header = TRUE)
+train <- train[,-c(1)]
+test <- test[,-c(1)]
+```
+
+# Conversión de variables a factor
+
+Se convierte la variable de respuesta a tipo categórico en R. 
+
+```{r}
+train$Hijos <- factor(train$Hijos)
+test$Hijos <- as.factor(test$Hijos)
+train$tipo_trabajo <- as.factor(train$tipo_trabajo)
+
+```
+
+# Contrucción del modelo
+
+Se entrena la primera variante del modelo usando como control de entrenamiento la metodología de validación cruzada en 5 folds. 
+
+```{r}
+bosque <- train(Hijos ~ I_HOGAR+tipo_vivienda+CANT_PERSONAS_HOGAR+con_pareja+consumo_energia 
+                ,data = train, method = 'rf', 
+                trControl = trainControl(method='cv',number = 5))
+```
+
+Descripción general del bosque aleatorio generado
+
+```{r}
+bosque
+```
+
+
+# Predicciones usando el primer bosque aleatorio
+
+Se procede a predecir valores para el subconjunto de prueba
+
+```{r}
+names(test)
+preds1 <- predict(bosque, newdata = test[,c(8,10,11,12,16)], type = 'raw')
+summary(preds1)
+```
+
+**Ahora véase la matriz de confusión y el nivel de precisión alcanzados:**
+
+```{r}
+test$Hijos <- as.factor(test$Hijos)
+levels(preds1)
+levels(test$Hijos) <- c(seq(0:11)-1)
+levels(test$Hijos)
+confusionMatrix(data = preds1, reference = test$Hijos)
+```
+
+Nivel de precisión general en las predicciones: 77.72%. Véase ahora el siguiente bosque aleatorio que emplea dos variables adicionales. 
+
+```{r}
+bosque2 <- train(Hijos ~ I_HOGAR+tipo_vivienda+CANT_PERSONAS_HOGAR+con_pareja+consumo_energia+ 
+                edad_maxima+estado_salud,data = train, method = 'rf', 
+                trControl = trainControl(method='cv',number = 5))
+```
+
+Predicciones generadas por el segundo bosque aleatorio
+
+```{r}
+preds2 <- predict(bosque2, newdata = test[,c(8,10,11,12,14,15,16)], type = 'raw')
+summary(preds2)
+```
+Y finalmente la matriz de confusión asociada a este último bosque.
+
+```{r}
+test$Hijos <- as.factor(test$Hijos)
+levels(preds2)
+levels(test$Hijos) <- c(seq(0:11)-1)
+levels(test$Hijos)
+confusionMatrix(data = preds2, reference = test$Hijos)
+```
+**Conclusión:** Se logra una mejoría en la precisión general de las predicciones, alcanzando un 79.01% de precisión. 
+
+
