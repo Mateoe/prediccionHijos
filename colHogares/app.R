@@ -79,6 +79,33 @@ ui <- fluidPage(
                               Además, el código empleado en la construcción de esta aplicación se encuentra alojado en el
                               siguiente <a href='https://github.com/Mateoe/prediccionHijos.git'>repositorio</a>.
                               </p>
+                              
+                              <br>
+                              
+                              <p style='font-size: 20px;text-align: justify;'>
+                              Esta aplicación ha sido desarrollada con el objetivo de servir como herramienta de consulta 
+                              e indagación de particular utilidad en el ámbito de la investigación tanto de comerciales como 
+                              académicos. Entes estatales, privados e incluso personas particulares podrán sacar beneficio del 
+                              uso de la aplicación. Algunos ejemplos de la utilidad de la aplicación se listan a continuación:
+                              </p>
+                              
+                              <br>
+                              
+                              <ul style='font-size: 20px;text-align: justify;'>
+                                <li>Análisis de hogares potencialmente necesitados de ayuda estatal.</li>
+                                <li><strong>Análisis de mercado:</strong> Ingrese las características del hogar de sus clientes y obtenga el 
+                                número de hijos en el hogar. Recomendación de productos para niños/jóvenes conforme los resultados 
+                                obtenidos.</li>
+                                <li><strong>Investigación:</strong> Ingrese características de los hogares en una población bajo estudio y obtenga 
+                                una predicción para la cantidad de hijos que le permita contrastar con sus hipótesis.</li>
+                              </ul>
+                              
+                              <br>
+                              
+                              <p style='font-size: 20px;text-align: justify;'>
+                              Una de las ventajas de Col Hogares, es que su uso no se limita a un propósito particular, la versatilidad de su objetivo 
+                              de predicción amplía con creces su utilidad.
+                              </p>
                             ")
             
         ),
@@ -195,7 +222,221 @@ ui <- fluidPage(
                 )
             )
         )
-    )
+    ),
+    
+    HTML('
+            <style>.site-footer
+                {
+                  background-color:#26272b;
+                  padding:45px 0 20px;
+                  font-size:15px;
+                  line-height:24px;
+                  color:#737373;
+                }
+                .site-footer hr
+                {
+                  border-top-color:#bbb;
+                  opacity:0.5
+                }
+                .site-footer hr.small
+                {
+                  margin:20px 0
+                }
+                .site-footer h6
+                {
+                  color:#fff;
+                  font-size:16px;
+                  text-transform:uppercase;
+                  margin-top:5px;
+                  letter-spacing:2px
+                }
+                .site-footer a
+                {
+                  color:#737373;
+                }
+                .site-footer a:hover
+                {
+                  color:#3366cc;
+                  text-decoration:none;
+                }
+                .footer-links
+                {
+                  padding-left:0;
+                  list-style:none
+                }
+                .footer-links li
+                {
+                  display:block
+                }
+                .footer-links a
+                {
+                  color:#737373
+                }
+                .footer-links a:active,.footer-links a:focus,.footer-links a:hover
+                {
+                  color:#3366cc;
+                  text-decoration:none;
+                }
+                .footer-links.inline li
+                {
+                  display:inline-block
+                }
+                .site-footer .social-icons
+                {
+                  text-align:right
+                }
+                .site-footer .social-icons a
+                {
+                  width:40px;
+                  height:40px;
+                  line-height:40px;
+                  margin-left:6px;
+                  margin-right:0;
+                  border-radius:100%;
+                  background-color:#33353d
+                }
+                .copyright-text
+                {
+                  margin:0
+                }
+                @media (max-width:991px)
+                {
+                  .site-footer [class^=col-]
+                  {
+                    margin-bottom:30px
+                  }
+                }
+                @media (max-width:767px)
+                {
+                  .site-footer
+                  {
+                    padding-bottom:0
+                  }
+                  .site-footer .copyright-text,.site-footer .social-icons
+                  {
+                    text-align:center
+                  }
+                }
+                .social-icons
+                {
+                  padding-left:0;
+                  margin-bottom:0;
+                  list-style:none
+                }
+                .social-icons li
+                {
+                  display:inline-block;
+                  margin-bottom:4px
+                }
+                .social-icons li.title
+                {
+                  margin-right:15px;
+                  text-transform:uppercase;
+                  color:#96a2b2;
+                  font-weight:700;
+                  font-size:13px
+                }
+                .social-icons a{
+                  background-color:#eceeef;
+                  color:#818a91;
+                  font-size:16px;
+                  display:inline-block;
+                  line-height:44px;
+                  width:44px;
+                  height:44px;
+                  text-align:center;
+                  margin-right:8px;
+                  border-radius:100%;
+                  -webkit-transition:all .2s linear;
+                  -o-transition:all .2s linear;
+                  transition:all .2s linear
+                }
+                .social-icons a:active,.social-icons a:focus,.social-icons a:hover
+                {
+                  color:#fff;
+                  background-color:#29aafe
+                }
+                .social-icons.size-sm a
+                {
+                  line-height:34px;
+                  height:34px;
+                  width:34px;
+                  font-size:14px
+                }
+                .social-icons a.facebook:hover
+                {
+                  background-color:#3b5998
+                }
+                .social-icons a.twitter:hover
+                {
+                  background-color:#00aced
+                }
+                .social-icons a.linkedin:hover
+                {
+                  background-color:#007bb6
+                }
+                .social-icons a.dribbble:hover
+                {
+                  background-color:#ea4c89
+                }
+                @media (max-width:767px)
+                {
+                  .social-icons li.title
+                  {
+                    display:block;
+                    margin-right:0;
+                    font-weight:600
+                  }
+                }
+            </style>
+    
+               <!-- Pie de la aplicación -->
+               <footer class="site-footer" style:>
+               <div class="container">
+                   <div class="row">
+                       <div class="col-sm-12 col-md-6">
+                           <h6>Información</h6>
+                           
+                           <p class="text-justify">
+                           Aplicación creada para la asignatura <strong>Técnicas en aprendizaje estadístico
+                           </strong> a cargo del profesor <strong>Juan David Ospina Arango</strong>.
+                           En el diseño se utilizó el lenguaje de programación R, el lenguaje
+                           de etiquetas HTML y estilos css.
+                                
+                           </p>
+                           </div>
+                           
+                           <div class="col-xs-6 col-md-3">
+                           <h6>cREADORES</h6>
+                               <ul class="footer-links">
+                                   <li>Alejandro Bedoya Cataño</li>
+                                   <li>Estefanía Echeverry Franco</li>
+                                   <li>Juan Fernando Patiño Castro</li>
+                                   <li>Mateo Espinal Londoño</li>
+                                   <li>Sebastian Agudelo Jimenez</li>
+                               </ul>
+                           </div>
+                           
+                           <div class="col-xs-6 col-md-3">
+                           <h6>contacto</h6>
+                               <ul class="footer-links">
+                                   <li>alebedoyacat@unal.edu.co</li>
+                                   <li>eecheverryf@unal.edu.co</li>
+                                   <li>jfpatinoc@unal.edu.co</li>
+                                   <li>maespinallo@unal.edu.co</li>
+                                   <li>sagudeloj@unal.edu.co</li>
+                               </ul>
+                           </div>
+                       </div>
+                   <hr>
+               </div>
+               <div class="container">
+                   <div class="row">
+                   <div class="col-md-8 col-sm-6 col-xs-12">
+                       <p class="copyright-text">Copyright &copy; 2020 All Rights Reserved by Col Hogares.</p>
+                   </div>
+               </div>
+               </footer>')
 )
 
 
