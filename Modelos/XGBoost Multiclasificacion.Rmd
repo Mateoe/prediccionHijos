@@ -1,8 +1,11 @@
 ---
 title: "XGBoost - Multiclasificacion"
-author: "Alejandro Bedoya Cataño"
-date: "30/3/2021"
-output: html_document
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry" 
+date: "Marzo 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
@@ -156,8 +159,6 @@ print(P1)
 # Reducción de variables en búsqueda de mejoría
 
 ```{r}
-numero_de_clases <- length(unique(train$Hijos))
-numero_de_clases
 sub_train <- train[,c(1,8,9,10,11,15,16)]
 sub_train_label  <- sub_train[,1]
 sub_train_covariables <- as.matrix(sub_train[,-1])
@@ -169,7 +170,7 @@ head(sub_train)
 
 ```{r}
 sub_train_matrix <- xgb.DMatrix(data = sub_train_covariables, label = sub_train_label)
-sub_test_matrix <- xgb.DMatrix(data = sub_test_covariables, label=sub_test_label)
+sub_test_matrix <- xgb.DMatrix(data = sub_test_covariables, label = sub_test_label)
 ```
 
 ```{r}
@@ -180,20 +181,14 @@ parametros_xgb2 <- list("objective"="multi:softprob",
                        early_stoppin_rounds = 200,
                        nfold =5,
                        max_depth = 8)   #Se puede hacer hyperparameter tunning
-modelo_xg2 <- xgb.train("objective"="multi:softprob",
-                       "eval_metric"="mlogloss",
-                       "num_class"=numero_de_clases,
-                       eta = 0.3,
-                       early_stoppin_rounds = 200,
-                       nfold =5,
-                       max_depth = 8,
+modelo_xg2 <- xgb.train(params = parametros_xgb2,
                        data = sub_train_matrix, nrounds=500)
 ```
 
 ```{r}
 # Predict para el test set
 test_pred2 <- predict(modelo_xg2, newdata = sub_test_matrix)
-test_prediction2 <- matrix(test_pred2, nrow = numero_de_clases,
+test_prediction2 <- matrix(test_pred, nrow = numero_de_clases,
                           ncol=length(test_pred2)/numero_de_clases) %>%
   t() %>%
   data.frame() %>%
