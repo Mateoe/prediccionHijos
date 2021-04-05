@@ -1,0 +1,169 @@
+---
+title: "Modelo KNN"
+author: "Sebastian Agudelo Jimenez"
+date: "Abril 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de librerías
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(tree)
+library(randomForest)
+library(gbm)
+library(MASS)
+library(caret)
+library(recipes)
+```
+
+# Carga de las bases de datos
+
+Bases de datos de entrenamiento y prueba que contienen las variables 'definitivas' a utilizar.
+
+```{r}
+#setwd()  #Pa que definan la ruta de su directorio
+train <- read.csv("train.csv", header = T)
+test <- read.csv("test.csv",header = T)
+# Se elimina la primera columna ya que los datos vienen con una fila de observaciones adicional
+train <- train[,-c(1)]
+test <- test[,-c(1)]
+```
+
+# Recodificación de las variables
+Como tenemos una variable respuesta discreta y covariables categóricas codificadas numéricamente se ajustarán dichas variables como tipo factor.
+
+```{r}
+train$Hijos= as.factor(train$Hijos)
+test$Hijos= as.factor(test$Hijos)
+train$nivel_edu <- as.factor(train$nivel_edu)
+train$tipo_trabajo <- as.factor(train$tipo_trabajo)
+train$estado_civil <- as.factor(train$estado_civil)
+train$tipo_vivienda <- as.factor(train$tipo_vivienda)
+train$sexo <- as.factor(train$sexo)
+train$con_pareja <- as.factor(train$con_pareja)
+train$estado_salud <- as.factor(train$estado_salud)
+test$nivel_edu <- as.factor(test$nivel_edu)
+test$tipo_trabajo <- as.factor(test$tipo_trabajo)
+test$estado_civil <- as.factor(test$estado_civil)
+test$tipo_vivienda <- as.factor(test$tipo_vivienda)
+test$sexo <- as.factor(test$sexo)
+test$con_pareja <- as.factor(test$con_pareja)
+test$estado_salud <- as.factor(test$estado_salud)
+train$consumo_energia= as.numeric(train$consumo_energia)
+test$consumo_energia= as.numeric(test$consumo_energia)
+```
+
+# Subconjunto de entramiento y prueba
+
+Como los análisis realizados en distintos modelos han arrojado que las variables mas importantes para predecir el número de hijos de un hogar en Colombia con nuestro conjunto de entrenamiento son 'I_HOGAR', 'PERCAPITA', 'CANT_PERSONAS_HOGAR', 'consumo_energia', 'sexo', 'edad_maxima' y 'con_pareja', se opta por utilizar en el creación del modelo KNN solo dichas variables.
+
+```{r}
+subtrain<-train[,c('Hijos', 'I_HOGAR', 'PERCAPITA', 'CANT_PERSONAS_HOGAR', 'consumo_energia', 'sexo', 'edad_maxima', 'con_pareja')]
+subtest<-test[,c('Hijos', 'I_HOGAR', 'PERCAPITA', 'CANT_PERSONAS_HOGAR', 'consumo_energia', 'sexo', 'edad_maxima', 'con_pareja')]
+```
+
+# Objeto recipe
+
+```{r}
+# Se crea un objeto recipe() con la variable respuesta y los predictores.
+objeto_recipe <- recipe(formula = Hijos~.,
+                        data =  subtrain)
+objeto_recipe
+```
+
+Se estandarizan las variables numéricas y se crean dummies con las categóricas (las variables dummies binarias al ser creadas toman como redundante el primer factor y por tanto solo se conserva el segundo factor). 
+
+```{r}
+objeto_recipe <- objeto_recipe %>% step_center(all_numeric())
+objeto_recipe <- objeto_recipe %>% step_scale(all_numeric())
+objeto_recipe <- objeto_recipe %>% step_dummy(all_nominal(), -all_outcomes())
+# Se entrena el objeto recipe
+trained_recipe <- prep(objeto_recipe, training = subtrain)
+trained_recipe
+```
+
+# Se aplican las transformaciones al conjunto de entrenamiento y de prueba
+
+```{r}
+datos_train_prep <- bake(trained_recipe, new_data = subtrain)
+datos_test_prep  <- bake(trained_recipe, new_data = subtest)
+
+glimpse(datos_train_prep)
+glimpse(datos_test_prep)
+```
+# Modelo KNN
+
+Después de realizar una hiperparametrización para encontrar el número de vecinos optimo con *k = 1, 2, 5, 10, 15, 20, 30, 50* y *100* vecinos, se encontró que k=50 es el número de vecinos mas optimo para lograr un mayor "Accuracy", y se procedió de la siguiente manera:
+
+#Proceso en paralelo.
+
+library(doMC)
+
+registerDoMC(cores = 4)
+
+#Repeticiones y particiones.
+
+particiones  <- 10
+
+repeticiones <- 5
+
+#Hiperparam.
+
+hiperparametros <- data.frame(k = 50)
+
+#Semillas
+
+set.seed(123)
+
+seeds <- vector(mode = "list", length = (particiones * repeticiones) + 1)
+for (i in 1:(particiones * repeticiones)) {
+  seeds[[i]] <- sample.int(1000, nrow(hiperparametros)) 
+}
+
+seeds[[(particiones * repeticiones) + 1]] <- sample.int(1000, 1)
+
+#Control de entrenamiento.
+
+control_train <- trainControl(method = "repeatedcv", number = particiones,
+                              repeats = repeticiones, seeds = seeds,
+                              returnResamp = "final", verboseIter = FALSE,
+                              allowParallel = TRUE)
+
+#Modelo ajustado.
+
+set.seed(342)
+
+modelo_knn <- train(Hijos ~ ., data = datos_train_prep,
+                    method = "knn",
+                    tuneGrid = hiperparametros,
+                    metric = "Accuracy",
+                    trControl = control_train)
+
+Como el ajuste de dicho modelo requería un buen tiempo de proceso se decidió por cargar el modelo en formato Rdata para su análisis.
+
+```{r}
+modelo_knn <- readRDS("knn.rds") #especificando la ruta del archivo con setwd()
+modelo_knn
+```
+
+# Predicción de los datos de prueba
+
+```{r}
+predicciones_raw <- predict(modelo_knn, newdata = datos_test_prep,
+                            type = "raw")
+head(predicciones_raw)
+```
+
+
+
+

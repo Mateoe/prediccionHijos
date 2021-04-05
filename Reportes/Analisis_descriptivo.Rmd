@@ -1,12 +1,7 @@
 ---
 title: 'Col Hogares: Análisis descriptivo'
-author: 
-- "**Alejandro Bedoya**"
-- "**Estefania Echeverry**"
-- "**Sebastian Agudelo**"
-- "**Juan Fernando Patiño**"
-- "**Mateo Espinal**"
-date: "Abril, 2021"
+author:  "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry"
+date: "Abril 2021"
 output: 
   prettydoc::html_pretty:
     theme: architect
