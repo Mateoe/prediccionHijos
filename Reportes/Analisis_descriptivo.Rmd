@@ -1,7 +1,12 @@
 ---
 title: 'Col Hogares: Análisis descriptivo'
-author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry"
-date: "Marzo, 2021"
+author: 
+- "**Alejandro Bedoya**"
+- "**Estefania Echeverry**"
+- "**Sebastian Agudelo**"
+- "**Juan Fernando Patiño**"
+- "**Mateo Espinal**"
+date: "Abril, 2021"
 output: 
   prettydoc::html_pretty:
     theme: architect
@@ -123,9 +128,9 @@ datos_vivienda$clave <- paste0(datos_vivienda$DIRECTORIO, datos_vivienda$SECUENC
 salud$clave <- paste0(salud$DIRECTORIO, salud$SECUENCIA_P)
 ```
 
-Intercambio de nombres para la base de datos servicios hogar
 
 ```{r include=FALSE}
+# Intercambio de nombres para la base de datos servicios hogar y uso_energetico
 colnames(servi_hogar)[3] <- 'ORDEN'
 colnames(servi_hogar)[4] <- 'SECUENCIA_P'
 colnames(uso_energetico)[3] <- 'ORDEN'
@@ -182,23 +187,24 @@ BASE_FINAL %>%
 ```
 
 
-```{r}
+```{r echo=FALSE}
 # Agregando la base datos_vivienda a BASE_FINAL
 BASE_FINAL <- merge(x = datos_vivienda, y = BASE_FINAL, by = 'DIRECTORIO', all.y = TRUE)
 ```
 
-```{r}
+```{r echo=FALSE}
 BASE_FILTRADA <- read.csv("BASE_FILTRADA.csv", header = TRUE)
 BASE_FILTRADA <- BASE_FILTRADA[,-1]
 ```
 
+Luego de la creación de la base de datos, con las variables seleccionadas, las nuevas variables, la imputación de los datos faltantes y como críterio de decisión antes de realizar modelos de machine learning, procedemos a realizar el siguiente análisis:
 
 # Máximo nivel educativo alcanzado versus número de hijos
 
 Una de las variables en donde podría esperarse una variación significativa en la cantidad de hijos a lo largo de sus niveles, es en el nivel educativo máximo alcanzado, en este caso, por quien sea cabeza del hogar. Esta variable cuenta con 13 niveles en respuesta a la pregunta ¿cuál es su nivel educativo más alto alcanzado? y que son los siguientes:
 
 * 1. Ninguno
-* 2.Preescolar
+* 2. Preescolar
 * 3. Básica primaria
 * 4. Básica secundaria
 * 5. Media
