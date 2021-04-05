@@ -18,26 +18,30 @@ library(dplyr)
 library(DT)
 library(ggplot2)
 library(thematic)
+library(xgboost)
+library(dplyr)
+library(xgboost)
+library(shinydashboard)
 
 #Lectura el conjunto de datos
-datos <- read.csv("../Bases de datos/BASE_FILTRADA(sin_nas).csv")
+datos <- read.csv("BASE_FILTRADA(sin_nas).csv")
 
 #Selección de las varaibles relevantes del conjunto de datos
-datos <- datos %>% select(CANT_PERSONAS_HOGAR,
-                          con_pareja,
-                          edad_maxima,
+datos <- datos %>% select(I_HOGAR,
                           PERCAPITA,
-                          I_HOGAR,
+                          CANT_PERSONAS_HOGAR,
                           consumo_energia,
-                          Hijos)
+                          edad_maxima,
+                          con_pareja,
+                          Hijos) 
 
 #Nombrado de las variables del conjunto de datos
-colnames(datos) <- c("Personas hogar",
-                     "Con pareja",
-                     "Edad máxima",
+colnames(datos) <- c("Ingreso mensual",
                      "Ingreso percapita",
-                     "Ingreso mensual",
+                     "Número de personas",
                      "Consumo de energia",
+                     "Edad máxima",
+                     "Con pareja",
                      "Hijos")
 
 
@@ -46,7 +50,7 @@ colnames(datos) <- c("Personas hogar",
 ui <- fluidPage(
     
     #Definición del tema de la aplicación
-    theme = shinytheme("cyborg"),
+    theme = shinytheme("sandstone"),
     
     #Definición de la barra de navegación
     navbarPage( 
@@ -60,7 +64,22 @@ ui <- fluidPage(
             
             icon = icon("info-circle"),                   #Icono de la pestaña
             
-            titlePanel("Descripción de la aplicación")    #Titulo de la pestaña
+            HTML("
+                              <div style='text-align: center;margin-top:80px;'>
+                                  <img src='Col_Hogares.png' width='300px'/>
+                              </div>
+                              <hr style='border-top: 1px solid rgba(0, 0, 0, 0.4);'/>
+                        
+                              <p style='font-size: 20px;text-align: justify;'>
+                              En este sitio web se encontrara una herramienta de predicción que servirá en la estimación
+                              del número de hijos de un hogar colombiano actual, el algoritmo de predicción está basado
+                              en la información presentada por el DANE en la ultima encuesta nacional de calidad de vida
+                              realizada en el año 2019, el reporte técnico puede ser encontrado en el siguiente 
+                              <a href='https://rpubs.com/AlejandroBedoya/Col_Hogares'>enlace</a>.
+                              Además, el código empleado en la construcción de esta aplicación se encuentra alojado en el
+                              siguiente <a href='https://github.com/Mateoe/prediccionHijos.git'>repositorio</a>.
+                              </p>
+                            ")
             
         ),
         
@@ -81,6 +100,25 @@ ui <- fluidPage(
                 #Definición del panel de variables de entrada
                 sidebarPanel(
                     
+                    
+                    #Definición del control desizante para el ingreso mensual
+                    numericInput("i_hogar",
+                                 "Ingreso mensual del hogar:",
+                                 min = 0,
+                                 max = 284600000,
+                                 value = 1734180,
+                                 #ticks = FALSE
+                    ),
+                    
+                    #Definición del control desizante para el ingreso percapita
+                    numericInput("percapita",
+                                 "Ingreso per-cápita:",
+                                 min = 0,
+                                 max = 120000000 ,
+                                 value = 711110,
+                                 #ticks = FALSE
+                    ),
+                    
                     #Definición del control desizante para numero de personas
                     sliderInput("personas",
                                 "Número de personas en el hogar:",
@@ -88,12 +126,13 @@ ui <- fluidPage(
                                 max = 19,
                                 value = 3),
                     
-                    #Definición de las opciones para la situacion sentimental del jefe del hogar
-                    radioButtons("con_pareja", 
-                                 "Situación sentimental del jefe del hogar:",
-                                 c("1. Con pareja que vive en el hogar" = 1,
-                                   "2. Sin pareja" = 2
-                                 )
+                    #Definición del control desizante para la energia de la ultima factura
+                    numericInput("energia",
+                                 "Pago por consumo de energía en la ultima factura:",
+                                 min = 0,
+                                 max = 284600000,
+                                 value = 46161,
+                                 #ticks = FALSE
                     ),
                     
                     #Definición del control desizante para la edad máxima entre el jefe y el conyugue
@@ -103,39 +142,33 @@ ui <- fluidPage(
                                 max = 113,
                                 value = 49),
                     
-                    #Definición del control desizante para el ingreso percapita
-                    sliderInput("percapita",
-                                "Ingreso per-cápita:",
-                                min = 0,
-                                max = 120000000 ,
-                                value = 711110,
-                                ticks = FALSE),
                     
-                    #Definición del control desizante para el ingreso mensual
-                    sliderInput("i_hogar",
-                                "Ingreso mensual del hogar:",
-                                min = 0,
-                                max = 284600000,
-                                value = 1734180,
-                                ticks = FALSE),
-                    
-                    
-                    #Definición del control desizante para la energia de la ultima factura
-                    sliderInput("energia",
-                                "Pago por consumo de energía en la ultima factura:",
-                                min = 0,
-                                max = 284600000,
-                                value = 46161,
-                                ticks = FALSE),
-                    
+                    #Definición de las opciones para la situacion sentimental del jefe del hogar
+                    radioButtons("con_pareja", 
+                                 "Situación sentimental del jefe del hogar:",
+                                 c("1. Con pareja que vive en el hogar" = 1,
+                                   "2. Sin pareja" = 2
+                                 )
+                    ),
                 ),
                 
                 
                 #Definición del panel de variables de salida
                 mainPanel(
                     
-                    #Definición del panel que refleja las variables de entrada
-                    tableOutput("entradas"),
+                    splitLayout(
+                        #Definición del panel que refleja las variables de entrada
+                        tableOutput("entradas"),
+                        
+                        
+                        column(8, wellPanel(
+                            span(textOutput("predText"), style="font-size: 22px"),
+                            verbatimTextOutput("prediccion")
+                        ))
+                    ),
+                    
+                    
+                    
                     
                     #Definición del panel de pestañas de la variable de salida
                     tabsetPanel(
@@ -170,22 +203,84 @@ ui <- fluidPage(
 
 # Definción de la funcionalidad lógica de la aplicación (servidor)
 server <- function(input, output) {
+
+    #Texto de salida de la predicción
+    output$predText <- renderText({
+        as.character("Predicción")
+    })
     
+    
+    #Función de predicción
+    prediccion2<-reactive({
+        
+        #--------------------- Modelo --------------------#
+        #Lectura del modelo
+        mod_xg <- readRDS("modelo_xg1.rds")
+        
+        #Variables de entradas al modelo
+        entradas<-c(as.numeric(input$i_hogar),
+                    as.numeric(input$percapita),
+                    as.numeric(input$personas),
+                    as.numeric(input$energia),
+                    as.numeric(input$edad_maxima),
+                    as.numeric(input$con_pareja))
+        
+        #Se convierten las entradas a data frame
+        m <- as.data.frame(t(entradas))
+        
+        #Se establecen los nombres de las columnas del dataframe
+        colnames(m) <- c("I_HOGAR",
+                         "PERCAPITA", 
+                         "CANT_PERSONAS_HOGAR",
+                         "consumo_energia",
+                         "edad_maxima",
+                         "con_pareja")
+        
+        #Se convierte el data frame a matriz
+        sub_test_matrix <- as.matrix(m)
+        
+        #Se realiza la predicción
+        test_pred2 <- predict(mod_xg, newdata = sub_test_matrix)
+        
+        #Se extrae el número de hijos predicho
+        #se resta 1 dado que los grupos se re etiquetaron de 1-12
+        #Y con este procedimiento se devuelven al rango 0-11
+        prediccion <- max.col(t(test_pred2), "last")-1 
+        
+        #Se retorna la predicción
+        return(prediccion)
+        })
+    
+    
+    #Salida de la predicción
+    output$prediccion <- renderText({
+        prediccion2()
+    })
+
+    
+    
+    #--------------------- Tabla que refleja las entradas --------------------#
     #Creación del dataframe de varaibles de entrada
     variables_entrada <- reactive({
+
+        entradas<-c(as.numeric(input$i_hogar),
+                    as.numeric(input$percapita),
+                    as.numeric(input$personas),
+                    as.numeric(input$energia),
+                    as.numeric(input$edad_maxima),
+                    as.numeric(input$con_pareja))
+        
+        
+        #--------------------- salida de datos --------------------#
         data.frame(
-            Caracteristica = c("Número de personas en el hogar",
-                               "Situación sentimental del jefe del hogar",
-                               "Edad maxima entre el conyugue y el jefe de familia",
+            Caracteristica = c("Ingreso mensual del hogar",
                                "Ingreso per-cápita",
-                               "Ingreso mensual del hogar",
-                               "Pago por consumo de energía en la ultima factura"),
-            Valor = c(input$personas,
-                      input$con_pareja,
-                      input$edad_maxima,
-                      input$percapita,
-                      input$i_hogar,
-                      input$energia))
+                               "Número de personas en el hogar",
+                               "Pago por consumo de energía en la ultima factura",
+                               "Edad maxima entre el conyugue y el jefe de familia",
+                               "Situación sentimental del jefe del hogar"),
+            Valor = as.integer(entradas)
+        )
         
     })
     
@@ -194,6 +289,9 @@ server <- function(input, output) {
         variables_entrada()
     })
     
+    
+    #--------------------- Tabs --------------------#
+    
     #Variable de salida que contiene el gráfico de la distribución de la cantidad de hijos
     output$distribucion <- renderPlot({
         
@@ -201,22 +299,22 @@ server <- function(input, output) {
         ggplot(datos, aes(x = Hijos)) +
             
             #Definición del gráfico como histograma
-            geom_histogram(bins = 30, ) +
+            geom_bar(col = "black", fill = "#738ACD") +
             
             #Definición del titulo del histograma
             ggtitle("Frecuencia de la cantidad de hijos")+
             
             #Configuración del tema del gráfico
-            theme(plot.title = element_text(hjust = 0.5),
-                  text = element_text(size=14),
+            theme(plot.title = element_text(hjust = 0.5, size = 22),
+                  text = element_text(size=17),
                   plot.caption = element_text(hjust = 0, 
                                               size = 12, 
-                                              colour="orange"))+
+                                              colour="#738ACD"))+
             
             #Definición de los textos del gráfico
             labs(
                 y = "Frecuencia",
-                caption = "En los hogares colombianos lo mas frecuente no tener hijos o tener de uno a tres hijos")+
+                caption = "En los hogares colombianos lo mas frecuente es no tener hijos o tener de uno a tres hijos")+
             
             #Definición de la escala del gráfico en el eje x
             scale_x_continuous(breaks = unique(datos$Hijos))
@@ -274,7 +372,7 @@ server <- function(input, output) {
     output$bd <- renderDT(
         
         #Conjunto de datos utilizado
-        datos,
+        apply(datos, 2, as.integer),
         
         #Se establecen los filtros de la parte superior
         filter = "top",
