@@ -374,7 +374,7 @@ Los encuestados responden a la siguiente pregunta:
 * 2. Cuatro a seis veces a la semana
 * 3. Dos o tres veces a la semana
 * 4. Una vez por semana 
-*(Veces al día)*
+* (Veces al día)
 
 ```{r}
 P12 <- ggplot(subset(BASE_FINAL, !is.na(P5013S1)), aes(x=factor(P5013S1)))
@@ -536,7 +536,7 @@ A pesar de la diferencia de proporciones entre los niveles de la variable sexo, 
 
 Esta variable, que corresponde a la pregunta ¿ El estado de salud de _ en general, es:?, cuenta con cuatro niveles:
 
-** 1**. Muy bueno
+* 1. Muy bueno
 * 2. Bueno
 * 3. Regular
 * 4. Malo
