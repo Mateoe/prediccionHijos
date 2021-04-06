@@ -106,6 +106,16 @@ ui <- fluidPage(
                               Una de las ventajas de Col Hogares, es que su uso no se limita a un propósito particular, la versatilidad de su objetivo 
                               de predicción amplía con creces su utilidad.
                               </p>
+                              
+                              <br>
+                              
+                              <div style='text-align: center;margin-top:70px;'>
+                                <strong><p style='font-size: 30px;margin-top:-5px'>Video promocional de la aplicación</p></strong>
+                              </div>
+                              
+                              <p align='center'>
+                              <iframe src='https://drive.google.com/file/d/1Imv06DJ5wCkD1cCrYPdAB8lmUhSuL_bE/preview' width='74%' height='600'></iframe>
+                              </p>
                             ")
             
         ),
