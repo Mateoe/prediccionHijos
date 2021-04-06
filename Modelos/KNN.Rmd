@@ -1,6 +1,6 @@
 ---
 title: "Modelo KNN"
-author: "Sebastian Agudelo Jimenez"
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry" 
 date: "Abril 2021"
 output: 
   prettydoc::html_pretty:
