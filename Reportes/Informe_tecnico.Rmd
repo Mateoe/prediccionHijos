@@ -1,0 +1,264 @@
+---
+title: 'Col Hogares: Prediciendo el número de hijos de un hogar'
+subtitle: 'Informe técnico - Técnicas en aprendizaje estadístico'
+author: "Alejandro Bedoya - Sebastián Agudelo - Mateo Espinal - Juan Fernando Patiño - Estefanía Echeverry" 
+date: "Marzo 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+
+En el mundo y particularmente en Colombia, la cantidad de personas de los hogares ha ido decayendo conforme el pasar de los años; muestra de ello es que en el censo poblacional realizado por el DANE en el año 1973, el promedio de personas por hogar se encontraba en 5.9 personas, cifra que para el censo de 2005 ya habría bajado a 3.9 personas, y que para el mismo censo realizado en el año 2018, se encontraría en 3.1 personas (Cruz, M. 2018). 
+
+Con la evidencia del rápido decrecimiento en la cantidad personas de los hogares colombianos y el crecimiento inminente de los hogares unipersonales, el panorama a futuro parece tomar rumbo a una dismunición constante en el número de hijos; muestra de ello es que el 59% de los colombianos no desea tener hijos, y si los tiene, no desea tener más (Muñoz, D. Uribe, P. 2019). Hasta hace algún tiempo se habían tenido creencias como que, a condiciones más precarias de vida en el hogar o niveles educativos más bajos, mayor la cantidad de hijos, pero tras considerar lo anteriormente mencionado podría resultar natural preguntarse: ¿Seguirá siendo así?
+
+# Retos 
+
+Esta última pregunta resulta de interés para todo tipo de sectores, puesto que la variedad de entidades que se deben a los hijos de las familias y precisan de ellos para su existencia y rentabilidad, es muy amplia, algunos ejemplos podrían ser:
+
+- Entidades educativas (ministerios, secretarías, colegios y universidades)
+- Empresas / negocios privados 
+- Entes del área de investigación
+
+No obstante, como han probado los datos de censos recientes y algunos estudios sociales sobre el cambio en la composición de los hogares, las creencias que de manera intuitiva y casi obvia se tenían sobre factores asociados a la cantidad de hijos de un hogar no serán precisamente útiles ante esta nueva realidad de las familias colombianas.
+
+
+El desafío principal que se planea abordar en **Col Hogares** es el poder responder con un buen nivel de confiabilidad en la predicción de la cantidad de hijos que tiene o podrá tener un hogar de acuerdo con la información que año a año propicia el DANE. 
+
+
+
+
+# Consideraciones previas
+
+Los datos usados para el abordaje del problema corresponden a la encuesta de calidad de vida más reciente realizada por el DANE, que para la fecha es la realizada en el año 2019. La informacion, presentación, y resultados de dicha encuesta se pueden obtener aquí:
+
+http://microdatos.dane.gov.co/index.php/catalog/678/study-description
+
+Se definieron algunas etapas para poder llevar el problema desde las más de 700 variables y 500 mil registros que se tienen en los datos del DANE, a las 6 variables y 93 mil registros con que finalmente se entrenaron los modelos de predicción. Dichas etapas fueron las siguientes 
+
+- Contextualización: entendiendo la fuente de los datos
+- Preselección de variables
+- Análisis descriptivo y exploratorio
+- Transformación y creación de bases de datos
+- Creación y comparación de modelos
+
+Véase entonces cada una de estas secciones con su desarrollo metodológico y computacional.
+
+# Contextualización: Entendiendo la fuente de los datos
+
+Los ítems que fueron indispensables a la hora de entender la fuente de los datos rondaron en torno a que, como tal, los resultados de la encuesta de calidad de vida del DANE están repartidos en 15 bases de datos que alvergan distribuída en ellas la información correspondiente a 726 variables; dichas variables se captaban en una base u otra dependiento del tema de interés al que respondían (e.g. salud, finanzas, etc).
+Se resalta además que la encuesta se realiza por hogares, dando la posibilidad a que en una misma vivienda pueda haber 2 o más hogares diferentes.
+Entre todas las variables hay 3 que resultarían de vital importancia para el procesamiento y el objetivo general del trabajo
+
+* **DIRECTORIO:** Distintivo único para cada vivienda.
+* **SECUENCIA_P:** Orden en que se encuestaron los hogares dentro de cada vivienda. Cuando SECUENCIA_P sólo toma el valor 1, significa que sólo hay un hogar en la vivienda, en caso contrario, es una vivienda de múltiples hogares.
+
+Las dos anteriores son un insumo indispensable pues han sido la base de la creación de la variable "clave" que distingue de forma única cada hogar independientemente de la vivienda a la que pertenezca, cuya utilidad fue primaria.
+
+![Diagrama de flujo: creación de clave ](C:/Users\123/Downloads/diagrama1.jpg){width=width height=height}
+
+* **Parentezco con el jefe del hogar (P6051):** Sobre ella se basa la creación de la variable que indica la cantidad de hijos por hogar. El indicador 3 dentro de esta variable señalaba que el encuestado era hijo del cabeza de hogar, y al realizar la sumatoria de encuestados con dicha característica, se podía hayar el total de hijos en cada hogar. 
+
+![Diagrama de flujo: calculo del número de hijos](C:/Users/123/Downloads/diagrama2.jpg){width=width height=height}
+
+
+Una vez entendido el funcionamiento y distribución de la base de datos, lo siguiente sería la preselección de variables, pero para ello, fue necesario antes conextualizar a todo el equipo con algunos estudios socioeconómicos que sirvieran para nutrir el "conocimiento previo del investigador", pues este sería el insumo principal de decisión en esta primer etapa de selección. 
+
+
+# Preselección de variables
+
+El equipo en conjunto exploró las descripciones de cada una de las bases de datos, y, una a una, leyó y discutió sobre la pertinencia y posible utilidad de cada una de las 726 variables con miras a realizar un análisis descriptivo y exploratorio de las aquí seleccionadas. El listado de variables preseleccionadas en esta etapa se puede ver a continuación. 
+
+**De la base "composición y características del hogar":**
+
+* Hijos_hogar: Creada con P6051
+* P6081: Padre vive en el hogar
+* P6083: Madre vive en el hogar
+* P6087: Nivel de educación del padre
+* P6088: Nivel de educación de la madre
+* P6080: Etnia o grupo racial
+* P2057: ¿Se considera campesino?
+* P2059: ¿Considera que fue campesino?
+* P6040: Edad 
+* P1899: Nivel de satisfacción laboral 
+* P1896: Nivel de satisfacción con los ingresos
+* P5502: Estado civil
+* P6020: Sexo 
+* P1897: Satisfacción con su nivel de salud
+
+
+**En la base "datos de la vivienda":**
+
+
+* P1070: Tipo de vivienda
+* P5661S5: Problemas de invasión de espacio público
+* P8520S1: Energía eléctrica
+* P8520S5: Acueducto
+* P8520S3: Alcantarillado
+* P8520S4: Recolección de basura
+
+**En la base "Educación":**
+
+* P8586: ¿Estudia actualmente? 
+* P6218: ¿Por qué no estudia?
+* P8587: Nivel educativo más alto alcanzado
+* P1101: Jornada de estudio
+* P6160: Analfabetismo
+
+**En la base "fuerza_trabajo":**
+
+* P6240: Ocupación semana anterior
+* P8634: Dónde realiza su trabajo
+* P415: Horas de trabajo por semana
+* P6435: Tipo de trabajo
+* P421S4: Cuidó o atendió de niños la semana pasada
+
+**En la base "Servicios del hogar":**
+
+* P5000 cuartos o piezas en el hogar   
+* P5024 sanitarios o inodoros en el hogar  
+* P5013S1 Cantidad de comidas Veces al día   
+* I_HOGAR Ingreso mensual total del hogar   
+* PERCAPITA Ingreso per-cápita  
+* I_OU Ingreso mensual total de la otra unidad de gasto  
+* CANT_PERSONAS_HOGAR Cantidad de personas en el hogar  
+
+
+# Análisis descriptivo 
+
+Aún después de haber elegido 36 de variables como candidatas a ser de utilidad en la explicación de la variable de respuesta (cantidad de hijos), o por lo menos en la creación de nuevas variables que permitan explicarla, se procedió a repartir aleatoriamente las variables entre los miembros del equipo para que, tras el respectivo estudio y exploración de las variables, se presentaran los resultados y se sometieran a debate tras compartir los hallazgos con el equipo de trabajo a fin de elegir las variables definitivas.Como resultado, se incluyeron 14 variables de las bases de datos y se crearon 2 nuevas variables con las existentes. Dichas variables han sido las siguientes:
+
+* Nivel educativo máximo alcanzado
+* Tipo de trabajo
+* Número de cuartos
+* Número de sanitarios
+* Estado civil
+* Número de comidas al día
+* Ingresos mensuales del hogar
+* Ingresos mensuales percapita del hogar
+* Cantidad de personas en el hogar
+* Pago por consumo de energía en la última factura
+* Tipo de vivienda
+* Sexo del cabeza de hogar
+* Estado de salud del cabeza de hogar
+* Edad máxima entre el cabeza de hogar y su conyuge
+* ¿La pareja vive con la cabeza del hogar?
+
+Estas dos últimas variables han sido creadas a partir de variables ya existentes. Su proceso de creación está documentado en el enlace de la siguiente sección (transformación y creación de bases de datos), no obstante aquí se pueden observar los diagramas de flujo correspondientes a dicha creación a modo de abrebocas.
+
+![](C:/Users/123/Downloads/diagrama3.jpg){width=width height=height}
+
+El análisis completo de las 16 variables seleccionadas para la base de datos final que se emplearía en la construcción de modelos de predicción está disponible en el siguiente enlace:
+
+https://mateoe.github.io/prediccionHijos/Reportes/Analisis_descriptivo.html
+
+
+El análisis descriptivo dejó ver que el número de hogares colombianos con cantidades pequeñas o nulas de hijos es demasiado grande hoy en día; hallar variables que tuvieran una incidencia significativa sobre esta cantidad ha sido todo un reto en tanto la mayoría de hogares concentran sus cantidades de hijos en 0, 1 y 2, por lo que casi independientemente de las condiciones de vida del hogar, las cantidades tienden a no variar mucho de esas tres opciones. Incluso tras la construcción de nuevas variables que podrían haberse esperado influyeran, la variación no ha sido demasiado significativa.
+
+# Transformación y creación de bases de datos 
+
+Para la creación de la base de datos final se hizo necesario considerar una menor cantidad de registros en tanto muchos correspondían a respuestas de personas que no estaban capacitadas para brindar la información que resultaría de utilidad en la predicción del número de hijos. Por ejemplo, en un hogar de 3 personas conformado por padre, conyuge y un hijo, la respuesta a todos los interrogantes de las variables seleccionadas arriba estaban perfectamente contenidos en las respuestas que el cabeza de hogar brindó; haber considerado los otros dos registros hubiese resultado infructuoso en tanto serían datos redundantes de un mismo hogar, para dar solución a esto se optó por considerar únicamente las respuestas otorgadas por los cabezas de hogar. 
+
+Así pues, la creación de la base de datos siguió las siguientes etapas: 
+
+* **Creación de un indicador único para cada hogar:** Se decidió llamarlo "clave" y es resultante de la unión entre el directorio y la variable SECUENCIA_P. 
+
+* **Creación de la variable cantidad de hijos:** Para ello se debieron extraer de la base de datos de composición del hogar, los registros en donde la variable P6051 (parentezco con el jefe de hogar) fuese igual a 3 (indicador para los hijos del cabeza de hogar); lo anterior se hacía distinguiendo por el identificador único de hogares "clave", y luego sumando los registros resultantes en cada hogar. 
+
+* **Filtro de las bases:** Habiéndose decidido que se utilizarían los registros de los cabezas de hogar, lo procedente entonces fue filtrar las distintas bases de datos que componen la encuesta de calidad para reducirlas a los registros de interés, que para este caso eran 93360 jefes de hogar en la encuesta. Se resalta entonces que para este punto ya se ha bajado de más de 500 mil registros a sólo 93360 en los que se encuentra condensada y representada la información de todos los hogares encuestados. 
+
+* **Unión de las bases:** Se unieron todas las bases de datos que contienen las 16 variables de interés ya reducidas a 93360 registros y en donde la clave primaria para la unión (el identificador que servirá de puente de unión entre los registros de las bases) es la variable "clave" creada anteriormente. 
+
+* **Reducción y tratamiento de variables:** Se procedió a seleccionar únicamente las 16 variables resultantes del análisis descriptivo y a realizarles el respectivo tratamiento de valores faltantes de acuerdo a las características de cada variable. En este punto la base de datos final ya se encuentra lista para particionarse y utilizarse en el entrenamiento de modelos.
+
+* **Creación de las bases de entrenamiento y prueba:** Con la base lista, se procedió a partir la base de datos en dos; una para entrenamiento resultante de la asignación aleatoria del 70% de los datos de la base final (65213 registros), y otra para prueba, resultante de los registros no empleados en la base de entrenamiento y que corresponden al 30% de los datos totales (27947 registros). 
+
+Todo el proceso de creación de las bases de datos está disponible en el siguiente enlace:
+
+https://mateoe.github.io/prediccionHijos/Bases%20de%20datos/Creacion-base-de-datos.html
+
+En este punto se encuentra todo preparado para la creación y entrenamiento de modelos de predicción. 
+
+
+# Modelo de predicción
+
+Para el entrenamiento y selección de los modelos de predicción hubo un hecho a resaltar y que representó una de las mayores dificultades en todo el desarrollo de los modelos, esto es que el intentar entrenar modelos que implicaran la utilización de las 16 variables seleccionadas derivaba en tiempos de ejecución demasiado altos en los que, haciendo uso de todas las variables, el aporte de varias de ellas no era significativo. 
+
+Así las cosas, se hizo necesario hacer reducción de variables para cada proceso de entrenamiento de modelo, resaltando hechos como que,por ejemplo, las variables que fueron de mayor importancia en el entrenamiento de los modelos fueron:
+
+* Cantidad de personas en el hogar
+* Ingresos mensuales del hogar
+* Cantidad pagada por energía en la última factura
+* Edad máxima entre el jefe de hogar y su conyuge
+* Estado sentimental del jefe de hogar
+
+Se emplearon tres principales técnicas de aprendizaje de máquinas para la predicción del número de hijos por hogar: K-vecinos más cercanos, XGBoost y redes neuronales. El desarrollo de cada uno de los cuatro métodos puede verse en los siguientes enlaces
+
+
+* **Modelo XGBoost:** https://mateoe.github.io/prediccionHijos/Modelos/XGBoost-Multiclasificacion.html
+* **K-Vecinos más cercanos:** https://mateoe.github.io/prediccionHijos/Modelos/KNN.html
+* **Red Neuronal:** https://mateoe.github.io/prediccionHijos/Modelos/Neuralnet-multiclasificación.html
+* **Bosque Aleatorio:** https://mateoe.github.io/prediccionHijos/Modelos/RandomForest.html
+
+
+Tras el entrenamiento de los cuatro algoritmos se pueden hacer las siguientes observaciones:
+
+* El modelo con mejor desempeño fue el obtenido con la segunda versión desarrollada de bosque aleatorio, con una precisión general del 79% y seguido muy de cerca por el modelo generado con XGBoost, cuya precisión general fue de 78.68%.
+
+* A pesar de ser levemente mejor, el costo en términos de tiempo de procesamiento que precisó el randomForest y la cantidad de variables que se debieron incluirle (7 en total) para lograr esa mejoría de menos del 1% en precisión, ha conllevado a que dicho modelo se relegue a la segunda posición, y se elija el modelo construído con XGBoost para la construcción del aplicativo web.
+
+* El uso de redes neuronales fue muy costoso en cuanto a tiempo de procesamiento, siendo el más lento de los cuatro algoritmos en generar su modelo de predicción.
+
+
+**Dificultades:** El mayor inconveniente vino sin duda de la mano con que las frecuencias de la variable de respuesta eran muy escasas para cantidades grandes de hijos. Así las cosas, por más que se contase con cerca de 70 mil registros para entrenar los modelos de predicción, la gran mayoría de dichos registros correspondían a cantidades bajas de hijos (0, 1, 2 y 3). Para los niveles más altos de la variable de respuesta que llegaban hasta los once hijos, las cantidades de registros presentaban mucha escases y ello se vió reflejado en la precisión de las predicciones en dichas observaciones.
+
+Al revisar uno a uno los modelos y sus matrices de confusión, se puede evidenciar que la precisión en las predicciones para cantidades de hijos pequeñas (0, 1, 2 y 3), ha tenido excelente desempeño; no obstante, al avanzar en las cantidades de hijos, la precisión en las predicciones va decayendo hasta que, después de nueve hijos, los algoritmos no han acertado y en algunos casos nisiquiera generado una sola predicción. 
+
+# Resultados 
+
+Todo el proceso que hasta este punto se ha llevado, desde la descarga y depuración de los datos, hasta la creación de modelos, ha sido siempre apuntanto en una dirección y fue la implementación de una aplicación web funcional que predijera de manera fácil y entendible la cantidad de hijos de un hogar colombiano a día de hoy. El objetivo se ha conseguido y se encuentra implementado en el siguiente enlace:
+
+https://mateoe.shinyapps.io/colHogares/
+
+Al ingresar podrá encontrarse la presentación y el video con la explicación del funcionamiento del sitio. Se puede apreciar una sección denominada **predicción**, en donde por medio de un panel interactivo se pueden ingresar los valores que se desee tomen las variables con mayor influencia sobre la cantidad de hijos de un hogar. Una vez ingresadas, el aplicativo devuelve la cantidad de hijos predicha en función de los valores imputados por el usuario.
+
+
+# Conclusiones
+
+* Los resultados del análisis descriptivo realizado sobre las bases de datos que contienen la información de la encuesta de calidad de vida realizada por el DANE en 2019 permitieron evidenciar que, en efecto, los datos son congruentes con lo que se describe en la literatura del ámbito socioeconómico (revisar anexos); los hogares colombianos se han ido transformando y es cada vez más frecuente no sólo que la cantidad de personas por hogar sea muy reducida (una persona o como mucho dos), sino además que la cantidad de hijos por hogar también está en declive.
+
+Muestra de lo anterior es que la influencia de factores económicos o características físicas del hogar no tienen una influencia significativa sobre la cantidad de hijos, viéndose la explicación de dicha cantidad casi que obligada a que se explique mediante la cantidad de personas en el hogar. 
+
+* En general, los modelos de predicción generados tuvieron muy buen desempeño prediciendo cantidades pequeñas de hijos por hogar, sin embargo al tener que predecir hogares en donde las cantidades eran altas, ninguno mostró buena respuesta, esto debido a que la cantidad de hogares con dichas características en el conjunto de entrenamiento era muy escasa. 
+
+
+
+
+
+
+
+# Referencias 
+
+* Cruz, M. (2018). Diez resultados del censo 2018. Revista Fasecolda, (172), 86-93.
+
+* Muñoz, D y Uribe, P. (2019). Informe de resultados termómetro de la familia. Universidad e la Sabana, Colombia.
+
+* Martinez Arroyave, L. (2020). Tendencia 1: Nuevas Familias Nuevos Hogares: SE CUMPLIÓ. Smdigital.com.co. Disponible en: <https://smdigital.com.co/articulo/nuevas-familias-y-nuevos-hogares-tendencia-2019-se-cumplio-2/>
+
+* EL ESPECTADOR. (2016). En Colombia las mujeres tienen menos hijos y los hogares de solteros aumentaron. Disponible en: <https://www.elespectador.com/noticias/salud/en-colombia-las-mujeres-tienen-menos-hijos-y-los-hogares-de-solteros-aumentaron/> 
+
+
+
+
+
+
+
+
+
