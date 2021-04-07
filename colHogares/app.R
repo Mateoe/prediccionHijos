@@ -114,8 +114,10 @@ ui <- fluidPage(
                               </div>
                               
                               <p align='center'>
-                              <iframe src='https://drive.google.com/file/d/1Imv06DJ5wCkD1cCrYPdAB8lmUhSuL_bE/preview' width='74%' height='600'></iframe>
+                                <iframe width='80%' height='576' src='https://www.youtube.com/embed/iBH70vp9dTQ' title='YouTube video player' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; display: block' allowfullscreen></iframe>
                               </p>
+                              
+                              
                             ")
             
         ),
